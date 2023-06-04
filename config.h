@@ -32,6 +32,16 @@ private:
     QMapPtrQMapS2F fieldMappingS2F;
     QMapPtrQMapF2S fieldMappingF2S;
 
+public:
+    bool read_book_names();
+    QString get_book_file_path(QString& bookName);
+    QString get_book_file_name(QString& bookName);
+    bool read_mapping_names();
+    QVector<QString> get_field_names(QString& bookName);
+    std::vector<enum FieldType> get_field_types(QString& bookName);
+    enum FieldType get_field_type(QString& bookName, QString& fieldName);
+    QString get_field_name(QString& bookName, enum FieldType fieldType);
+
 };
 
 #endif // CONFIG_H
