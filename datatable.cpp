@@ -46,23 +46,23 @@ int DataTable::get_column_index(enum FieldType field)
     }
 }
 
-int get_column_index(QString& fieldName); //TODO
+//int get_column_index(QString& fieldName); //TODO
 
-bool DataTable::get_column_indices(QVector<enum FieldType>& fields, std::vector<int>& outputColumnIndices)
+bool DataTable::get_column_indices(QVector<enum FieldType>& fields, std::vector<int>& outputColumnIndices, bool retainUnfoundColumns)
 {
     outputColumnIndices.clear();
     for (FieldType t : fields) {
         int index = get_column_index(t);
-        if (index < 0) return false;
+        if (index < 0 && !retainUnfoundColumns) return false;
         outputColumnIndices.push_back(t);
     }
     return true;
 }
 
-bool get_column_indices(QVector<QString>& fieldNames, std::vector<int>& outputColumnIndices); //TODO
+//bool get_column_indices(QVector<QString>& fieldNames, std::vector<int>& outputColumnIndices); //TODO
 
 // get_row_index: 返回指定列为指定值的行，如果行数超过1，则返回数量的相反数，如果行数等于0，则返回-1
-int get_row_index(QString& fieldName, QString& fieldValue); //TODO
+//int get_row_index(QString& fieldName, QString& fieldValue); //TODO
 
 int DataTable::get_row_index(enum FieldType field, QString& fieldValue)
 {
@@ -75,13 +75,17 @@ int DataTable::get_row_index(enum FieldType field, QString& fieldValue)
         return rowIndices[0];
     }
 }
-// get_row_indeces: 返回指定列为指定值的所有行序号
-std::vector<int> get_row_indices(QString& fieldName, QString& fieldValue); //TODO
+// get_row_indices: 返回指定列为指定值的所有行序号，如果指定列不存在则返回空vector
+//std::vector<int> get_row_indices(QString& fieldName, QString& fieldValue); //TODO
 
 std::vector<int> DataTable::get_row_indices(enum FieldType field, QString& fieldValue)
 {
     std::vector<int> result;
     int columnIndex = get_column_index(field);
+    if (columnIndex < 0) {
+        qDebug("字段不存在");
+        return result;
+    }
     for (int i = 0; i < data->size(); ++i) {
         if ((*data)[i][columnIndex].compare(fieldValue, Qt::CaseInsensitive) == 0) {
             result.push_back(i);
@@ -90,7 +94,7 @@ std::vector<int> DataTable::get_row_indices(enum FieldType field, QString& field
     return result;
 }
 // get_unique_row_indices: 返回指定列为指定值的所有行序号，如果某个值的行数超过1，则对应行序号为行数的相反数
-std::vector<int> get_unique_row_indices(QString& fieldName, QSet<QString>& fieldValues); //TODO
+//std::vector<int> get_unique_row_indices(QString& fieldName, QSet<QString>& fieldValues); //TODO
 
 std::vector<int> DataTable::get_unique_row_indices(enum FieldType field, QSet<QString>& fieldValues)
 {
@@ -105,8 +109,8 @@ std::vector<int> DataTable::get_unique_row_indices(enum FieldType field, QSet<QS
     return result;
 }
 
-// get_multiple_row_indices: 返回指定列为指定值的所有行序号，如果某个值的行数超过1，则对应行序号为行数的相反数
-std::vector<int> get_multiple_row_indices(QString& fieldName, QSet<QString>& fieldValues);
+// get_multiple_row_indices: 返回指定列为指定值的所有行序号，如果某个值的行数超过1，则所有对应行序号都会返回
+//std::vector<int> get_multiple_row_indices(QString& fieldName, QSet<QString>& fieldValues);
 
 std::vector<int> DataTable::get_multiple_row_indices(enum FieldType field, QSet<QString>& fieldValues)
 {
@@ -131,16 +135,22 @@ bool DataTable::check_row_column_index(int rowIndex, int columnIndex)
             && (columnIndex < (*data)[rowIndex].size());
 }
 
-QString DataTable::get_cell_value(int rowIndex, int columnIndex)
+QString DataTable::get_cell_value(int rowIndex, int columnIndex, bool ignoreUnfoundColumn)
 {
-    assert(check_row_column_index(rowIndex, columnIndex));
-    return (*data)[rowIndex][columnIndex];
+    bool checked = check_row_column_index(rowIndex, columnIndex);
+    if (checked == false && ignoreUnfoundColumn == false) {
+        assert(checked);
+    } else if (checked == false && ignoreUnfoundColumn == true) {
+        return "";
+    } else {
+        return (*data)[rowIndex][columnIndex];
+    }
 }
 
-QString DataTable::get_cell_value(int rowIndex, enum FieldType field)
+QString DataTable::get_cell_value(int rowIndex, enum FieldType field, bool ignoreUnfoundColumn)
 {
     int columnIndex = get_column_index(field);
-    return get_cell_value(rowIndex, columnIndex);
+    return get_cell_value(rowIndex, columnIndex, ignoreUnfoundColumn);
 }
 
 std::shared_ptr<QVector<QString>> DataTable::get_formatted_row(int rowIndex, std::vector<int>& referenceColumnIndices)
@@ -148,7 +158,7 @@ std::shared_ptr<QVector<QString>> DataTable::get_formatted_row(int rowIndex, std
     QVector<QString> result;
     assert(check_row_index(rowIndex));
     for (int columnIndex : referenceColumnIndices) {
-        result.push_back(std::move(get_cell_value(rowIndex, columnIndex)));
+        result.push_back(std::move(get_cell_value(rowIndex, columnIndex, true)));
     }
     return std::make_shared<QVector<QString>>(result);
 }
@@ -159,7 +169,7 @@ std::shared_ptr<QVector<QString>> DataTable::get_formatted_row(int rowIndex, QVe
     QVector<QString> result;
     assert(check_row_index(rowIndex));
     for (enum FieldType field : referenceFields) {
-        result.push_back(std::move(get_cell_value(rowIndex, field)));
+        result.push_back(std::move(get_cell_value(rowIndex, field, true)));
     }
     return std::make_shared<QVector<QString>>(result);
 }

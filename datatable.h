@@ -36,33 +36,35 @@ public:
     //二、根据已知信息判断行序号或列序号
     // get_column_index: 能找到，返回序号，否则返回-1
     int get_column_index(enum FieldType field);
-    int get_column_index(QString& fieldName);
-    // get_column_indices：如果出现找不到的字段，返回false，否则在参数中返回字段数组
-    bool get_column_indices(QVector<enum FieldType>& fields, std::vector<int>& outputColumnIndices);
-    bool get_column_indices(QVector<QString>& fieldNames, std::vector<int>& outputColumnIndices);
+    //int get_column_index(QString& fieldName);
+    // get_column_indices：如果所有字段都能找到，返回true；如果出现找不到的字段，根据retainUnfoundColumns，若为false则返回false，若为true则在参数中对应位置填写-1
+    bool get_column_indices(QVector<enum FieldType>& fields, std::vector<int>& outputColumnIndices, bool retainUnfoundColumns);
+    //bool get_column_indices(QVector<QString>& fieldNames, std::vector<int>& outputColumnIndices);
 
     // get_row_index: 返回指定列为指定值的行，如果行数超过1，则返回数量的相反数，如果行数等于0，则返回-1
     // 这里做字符串比较时，大小写不敏感，如有需要可在设置里提供自定义大小写敏感判断
-    int get_row_index(QString& fieldName, QString& fieldValue);
+    //int get_row_index(QString& fieldName, QString& fieldValue);
     int get_row_index(enum FieldType field, QString& fieldValue);
 
-    // get_row_indeces: 返回指定列为指定值的所有行序号
-    std::vector<int> get_row_indices(QString& fieldName, QString& fieldValue);
+    // get_row_indices: 返回指定列为指定值的所有行序号，如果指定列不存在则返回空vector
+    //std::vector<int> get_row_indices(QString& fieldName, QString& fieldValue);
     std::vector<int> get_row_indices(enum FieldType field, QString& fieldValue);
 
     // get_unique_row_indices: 返回指定列为指定值的所有行序号，如果某个值的行数超过1，则对应行序号为行数的相反数
-    std::vector<int> get_unique_row_indices(QString& fieldName, std::unordered_set<QString>& fieldValues);
+    //std::vector<int> get_unique_row_indices(QString& fieldName, std::unordered_set<QString>& fieldValues);
     std::vector<int> get_unique_row_indices(enum FieldType field, QSet<QString>& fieldValues);
 
-    // get_multiple_row_indices: 返回指定列为指定值的所有行序号，如果某个值的行数超过1，则对应行序号为行数的相反数
-    std::vector<int> get_multiple_row_indices(QString& fieldName, std::unordered_set<QString>& fieldValues);
+    // get_multiple_row_indices: 返回指定列为指定值的所有行序号，如果某个值的行数超过1，则所有对应行序号都会返回
+    //std::vector<int> get_multiple_row_indices(QString& fieldName, std::unordered_set<QString>& fieldValues);
     std::vector<int> get_multiple_row_indices(enum FieldType field, QSet<QString>& fieldValues);
 
-    //三、获取数据
+    //三、获取数据：如果ignoreUnfoundColumn为true，则没有对应字段时返回""，否则报错退出
     bool check_row_index(int rowIndex);
     bool check_row_column_index(int rowIndex, int columnIndex);
-    QString get_cell_value(int rowIndex, int columnIndex);
-    QString get_cell_value(int rowIndex, enum FieldType field);
+    QString get_cell_value(int rowIndex, int columnIndex, bool ignoreUnfoundColumn);
+    QString get_cell_value(int rowIndex, enum FieldType field, bool ignoreUnfoundColumn);
+
+    //四、格式化数据：如果columnIndex或referenceField不合法，则对应字段填写空字符串（即""）
     std::shared_ptr<QVector<QString>> get_formatted_row(int rowIndex, std::vector<int>& referenceColumnIndices);
     std::shared_ptr<QVector<QString>> get_formatted_row(int rowIndex, QVector<enum FieldType>& referenceFields);
     std::shared_ptr<QVector<QVector<QString>>> get_formatted_row(std::vector<int>& rowIndices, std::vector<int>& referenceColumnIndices);

@@ -1,6 +1,9 @@
 #ifndef CONSTANT_H
 #define CONSTANT_H
 
+#include <QString>
+#include <QVector>
+
 enum FieldType {
     XULIEHAO,         //序列号（设备出厂编号）
     KAPIANBIANHAO,    //卡片编号
@@ -60,5 +63,18 @@ enum FieldType {
     ZICHANGUANLIYUANBEIZHU,     //资产管理员备注
     UNDEFINEDCOLUMN
 };
+
+enum ValueType {
+    STRING,
+    DATE,
+    INTEGER,
+    FLOATNUMBER,
+};
+
+typedef struct {
+    enum FieldType fieldType;
+    QString fieldName;
+} ColumnType;
+
 
 #endif // CONSTANT_H
