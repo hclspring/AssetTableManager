@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QDir>
 #include <QDirIterator>
+#include <QSettings>
 #include <memory>
 
 #include "constant.h"
@@ -18,6 +19,29 @@ typedef QMap<enum FieldType, QString> QMapField2String;
 typedef std::shared_ptr<QMapField2String> PtrQMapF2S;
 typedef QMap<QString, PtrQMapF2S> QMapPtrQMapF2S;
 
+/*
+ * 使用json文件保存相关配置
+ * 示例如下：
+{
+"recordBookRootPath": "xxx",
+"__recordBookNames": "台账名称，不包括更新日期、后缀等信息",
+"recordBookNames": [
+"固定资产台账",
+"无形资产台账",
+"xxx"
+],
+"__fieldMapping": "字段映射，给出每种台账的字段映射关系，即字段的type到name“，
+"fieldMapping": [
+    "固定资产台账": [
+    {"fieldType":"zichan", "fieldName":"资产"},
+    {"fieldType":"xxx", "fieldName":"xxx"}
+    ],
+    "无形资产台账": [
+    {"xxx":"xxx", "xxx":"xxx"}
+    ]
+]
+}
+ */
 
 class Config
 {
@@ -50,11 +74,13 @@ public:
     QString get_book_file_path(QString& bookName);
     QString get_book_file_name(QString& bookName);
     bool read_mapping_names();
-    QVector<QString> get_field_names(QString& bookName);
-    std::vector<enum FieldType> get_field_types(QString& bookName);
+    QVector<QString> get_field_names(QString& mappingName);
+    std::vector<enum FieldType> get_field_types(QString& mappingName);
     enum FieldType get_field_type(QString& bookName, QString& fieldName);
     QString get_field_name(QString& bookName, enum FieldType fieldType);
 
+private:
+    bool read_subdirs(const QString& rootPathStr, QVector<QString>& result, enum QDir::Filter filter);
 
 };
 
