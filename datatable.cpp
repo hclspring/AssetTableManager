@@ -54,7 +54,7 @@ bool DataTable::get_column_indices(QVector<enum FieldType>& fields, std::vector<
     for (FieldType t : fields) {
         int index = get_column_index(t);
         if (index < 0 && !retainUnfoundColumns) return false;
-        outputColumnIndices.push_back(t);
+        outputColumnIndices.push_back(index);
     }
     return true;
 }
