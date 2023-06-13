@@ -54,9 +54,10 @@ class Config
 
 public:
     Config();
+    Config(QString& newConfigFilePathName);
 
 private:
-    QString configFilePathName;
+    QString configFilePathName = "./config.txt";
     QString recordBookRootPath;
     QVector<QString> recordBookNames;
 

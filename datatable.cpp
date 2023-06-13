@@ -221,3 +221,60 @@ bool DataTable::update_cell(int rowIndex, enum FieldType field, QString& value)
 }
 
 
+
+
+
+
+void DataTable::readExcelData(QXlsx::Document& assetDocument, const QString& sheetName, int columnNameRow, int dataStartRow)
+{
+    assetDocument.selectSheet(sheetName);
+    QXlsx::AbstractSheet* sheet = assetDocument.sheet(sheetName);
+    QXlsx::Worksheet* worksheet = (QXlsx::Worksheet*) sheet;
+    readExcelData(worksheet, dataStartRow);
+    readExcelColumnNames(worksheet, columnNameRow);
+}
+
+
+void DataTable::readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow)
+{
+    worksheet->getFullCells(&maxRow, &maxCol);
+    qDebug() << maxRow << "行，" << maxCol << "列";
+    QVector<QString> row;
+    row.resize(maxCol);
+    data->fill(row, maxRow - dataStartRow + 1);
+    for (int r = dataStartRow; r <= maxRow; ++r) {
+        for (int c = 1; c <= maxCol; ++c) {
+            data->at(r-dataStartRow).at(c-1) = worksheet->read(r, c);
+        }
+    }
+}
+
+void DataTable::readExcelData(const QString &filename, int sheetIndex, int columnNameRow, int dataStartRow)
+{
+    QXlsx::Document document(filename);
+    if (document.load()) {
+        QStringList sheetNames = document.sheetNames();
+        if (sheetNames.size() <= sheetIndex) {
+            qDebug() << "文件中没有足够的表格，目前只有" << sheetNames.size() << "个sheet.";
+        } else {
+            QString sheetName = sheetNames[sheetIndex];
+            readExcelData(document, sheetName, columnNameRow, dataStartRow);
+        }
+    } else {
+        qDebug() << "读取文件" << filename << "失败！";
+    }
+}
+
+void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, int columnNameRow)
+{
+    if (maxCol > 0) {
+        excelColumnNames.resize(maxCol);
+    } else {
+        qWarning("maxCol不是正数！");
+    }
+    for (int i = 1; i <= maxCol; ++i) {
+        excelColumnNames[i-1] = worksheet->read(columnNameRow, i).toString();
+    }
+}
+
+

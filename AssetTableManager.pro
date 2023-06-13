@@ -33,3 +33,9 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+
+QXLSX_PARENTPATH=../../Qt/QXlsx/QXlsx/          # current QXlsx path is . (. means curret directory)
+QXLSX_HEADERPATH=../../Qt/QXlsx/QXlsx/header/   # current QXlsx header path is ./header/
+QXLSX_SOURCEPATH=../../Qt/QXlsx/QXlsx/source/   # current QXlsx source path is ./source/
+include(../../Qt/QXlsx/QXlsx/QXlsx.pri)

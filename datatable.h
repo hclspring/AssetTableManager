@@ -4,12 +4,16 @@
 #include <QString>
 #include <QVector>
 #include <QSet>
+#include <QDebug>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include <constant.h>
+#include "xlsxdocument.h"
+
+#include "constant.h"
+
 
 class DataTable
 {
@@ -24,6 +28,10 @@ private:
     std::shared_ptr<QVector<enum FieldType>> fields;
     // field2column指根据field获取列序号
     std::unordered_map<enum FieldType, int> field2column;
+
+    // maxRow指excel文件的最大行数，maxCol指excel文件的最大列数
+    int maxRow, maxCol;
+    QVector<QString> excelColumnNames;
 
 public:
     //一、对成员变量的set/get函数
@@ -77,8 +85,11 @@ public:
     bool update_cell(int rowIndex, enum FieldType field, QString& value);
 
 
-
-
+    //五、读取表格文件
+    void readExcelData(QXlsx::Document& assetDocument, const QString& sheetName, int columnNameRow = 1, int dataStartRow = 2);
+    void readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow = 2);
+    void readExcelData(const QString& filename, int sheetIndex = 0, int columnNameRow = 1, int dataStartRow = 2);
+    void readExcelColumnNames(QXlsx::Worksheet* worksheet, int columnNameRow = 1);
 
 
 };
