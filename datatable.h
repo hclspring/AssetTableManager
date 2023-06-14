@@ -5,10 +5,12 @@
 #include <QVector>
 #include <QSet>
 #include <QDebug>
+#include <QTextStream>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <iostream>
 
 #include "xlsxdocument.h"
 
@@ -86,10 +88,16 @@ public:
 
 
     //五、读取表格文件
-    void readExcelData(QXlsx::Document& assetDocument, const QString& sheetName, int columnNameRow = 1, int dataStartRow = 2);
+    void readExcelFile(const QString& filename, PtrQMapS2F mapS2F, int sheetIndex = 0, int columnNameRow = 1, int dataStartRow = 2);
+    void readExcelFile(QXlsx::Document& assetDocument, PtrQMapS2F mapS2F, const QString& sheetName, int columnNameRow = 1, int dataStartRow = 2);
     void readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow = 2);
-    void readExcelData(const QString& filename, int sheetIndex = 0, int columnNameRow = 1, int dataStartRow = 2);
-    void readExcelColumnNames(QXlsx::Worksheet* worksheet, int columnNameRow = 1);
+    void readExcelColumnNames(QXlsx::Worksheet* worksheet, PtrQMapS2F mapS2F, int columnNameRow = 1);
+
+    //六、合并更新台账
+    void updateWith(DataTable* newTable);
+
+    //七、写入表格文件
+    void writeExcelFile(const QString& filename, PtrQMapF2S mapF2S);
 
 
 };

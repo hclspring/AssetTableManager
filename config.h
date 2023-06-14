@@ -19,13 +19,6 @@
 #include "constant.h"
 
 
-typedef QMap<QString, enum FieldType> QMapString2Field;
-typedef std::shared_ptr<QMapString2Field> PtrQMapS2F;
-typedef QMap<QString, PtrQMapS2F> QMapPtrQMapS2F;
-typedef QMap<enum FieldType, QString> QMapField2String;
-typedef std::shared_ptr<QMapField2String> PtrQMapF2S;
-typedef QMap<QString, PtrQMapF2S> QMapPtrQMapF2S;
-
 /*
  * 使用json文件保存相关配置
  * 示例如下：

@@ -4,6 +4,8 @@
 #include <QString>
 #include <QVector>
 #include <QMap>
+#include <memory>
+
 
 enum class FieldType {
     XULIEHAO,         //序列号（设备出厂编号）
@@ -124,6 +126,15 @@ static const char* FIELDTYPESTR[] = {
     "ZICHANGUANLIYUANBEIZHU",     //资产管理员备注
     "COUNT"
 };
+
+
+
+typedef QMap<QString, enum FieldType> QMapString2Field;
+typedef std::shared_ptr<QMapString2Field> PtrQMapS2F;
+typedef QMap<QString, PtrQMapS2F> QMapPtrQMapS2F;
+typedef QMap<enum FieldType, QString> QMapField2String;
+typedef std::shared_ptr<QMapField2String> PtrQMapF2S;
+typedef QMap<QString, PtrQMapF2S> QMapPtrQMapF2S;
 
 static QMap<QString, enum FieldType> MAPFIELDSTR2TYPE;
 //QMap<enum FieldType, QString> MAPFIELDTYPE2STR;
