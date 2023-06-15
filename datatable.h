@@ -83,8 +83,8 @@ public:
     //四、更新数据
     // 对数据进行操作，成功返回true，失败返回false
     bool add_row(QVector<QString>& dataRow);
-    bool update_cell(int rowIndex, int columnIndex, QString& value);
-    bool update_cell(int rowIndex, enum FieldType field, QString& value);
+    bool update_cell(int rowIndex, int columnIndex, QString value);
+    bool update_cell(int rowIndex, enum FieldType field, QString value);
 
 
     //五、读取表格文件
@@ -94,7 +94,7 @@ public:
     void readExcelColumnNames(QXlsx::Worksheet* worksheet, PtrQMapS2F mapS2F, int columnNameRow = 1);
 
     //六、合并更新台账
-    void updateWith(DataTable* newTable);
+    void updateWith(DataTable* newTable, enum FieldType primaryKeyField);
 
     //七、写入表格文件
     void writeExcelFile(const QString& filename, PtrQMapF2S mapF2S);

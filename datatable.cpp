@@ -204,7 +204,7 @@ bool DataTable::add_row(QVector<QString>& dataRow)
     }
 }
 
-bool DataTable::update_cell(int rowIndex, int columnIndex, QString& value)
+bool DataTable::update_cell(int rowIndex, int columnIndex, QString value)
 {
     if (check_row_column_index(rowIndex, columnIndex)) {
         (*data)[rowIndex][columnIndex] = value;
@@ -214,7 +214,7 @@ bool DataTable::update_cell(int rowIndex, int columnIndex, QString& value)
     }
 }
 
-bool DataTable::update_cell(int rowIndex, enum FieldType field, QString& value)
+bool DataTable::update_cell(int rowIndex, enum FieldType field, QString value)
 {
     int columnIndex = get_column_index(field);
     return update_cell(rowIndex, columnIndex, value);
@@ -287,5 +287,43 @@ void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, PtrQMapS2F map
         }
     }
 }
+
+void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField)
+{
+    //获取新增表的主键序号
+    int primaryKeyColumnIndexOfNewTable = newTable->get_column_index(primaryKeyField);
+    //对每一行数据做同样的操作，i为新增表的行序号
+    for (int rowIndexOfNewTable = 0; rowIndexOfNewTable < newTable->get_data()->size(); ++rowIndexOfNewTable) {
+        //获取主键值
+        QString primaryKeyValue = newTable->get_data()->at(rowIndexOfNewTable).at(primaryKeyColumnIndexOfNewTable);
+        //获取主表中的行序号
+        int rowIndexOfMainTable = this->get_row_index(primaryKeyField, primaryKeyValue);
+        //如果主表中存在对应的行，则做更新
+        if (rowIndexOfMainTable >= 0) {
+            //对新增表该行数据的每一列做同样的操作
+            for (int columnIndexOfNewTable = 0; columnIndexOfNewTable < newTable->get_data()->at(rowIndexOfNewTable).size(); ++columnIndexOfNewTable) {
+                //获取每一列的字段
+                enum FieldType field = newTable->get_fields()->at(columnIndexOfNewTable);
+                //对主表对应的字段进行更新
+                this->update_cell(rowIndexOfMainTable, field, newTable->get_cell_value(rowIndexOfNewTable, columnIndexOfNewTable, true));
+            }
+        } //否则（主表中不存在对应的行），则新增一行数据
+        else {
+            // 将新增表的行按照主表的字段进行格式化
+            std::shared_ptr<QVector<QString>> formattedRow = newTable->get_formatted_row(rowIndexOfNewTable, *(this->get_fields()));
+            // 在主表中新增行
+            this->add_row(*formattedRow);
+        }
+    }
+}
+
+void DataTable::writeExcelFile(const QString& filename, PtrQMapF2S mapF2S)
+{
+    ;
+}
+
+
+
+
 
 
