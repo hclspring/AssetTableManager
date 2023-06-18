@@ -64,6 +64,7 @@ enum class FieldType {
     RUANJIANFUZEREN,            //软件负责人
     SHIYONGRENBEIZHU,           //使用人备注
     ZICHANGUANLIYUANBEIZHU,     //资产管理员备注
+    UNKNOWN,                    //未知字段
     COUNT
 };
 
@@ -124,6 +125,7 @@ static const char* FIELDTYPESTR[] = {
     "RUANJIANFUZEREN",            //软件负责人
     "SHIYONGRENBEIZHU",           //使用人备注
     "ZICHANGUANLIYUANBEIZHU",     //资产管理员备注
+    "UNKNOWN",                    //未知字段
     "COUNT"
 };
 
@@ -132,9 +134,12 @@ static const char* FIELDTYPESTR[] = {
 typedef QMap<QString, enum FieldType> QMapString2Field;
 typedef std::shared_ptr<QMapString2Field> PtrQMapS2F;
 typedef QMap<QString, PtrQMapS2F> QMapPtrQMapS2F;
+
 typedef QMap<enum FieldType, QString> QMapField2String;
 typedef std::shared_ptr<QMapField2String> PtrQMapF2S;
 typedef QMap<QString, PtrQMapF2S> QMapPtrQMapF2S;
+
+typedef QMap<QString, int> QMapString2Int;
 
 static QMap<QString, enum FieldType> MAPFIELDSTR2TYPE;
 //QMap<enum FieldType, QString> MAPFIELDTYPE2STR;

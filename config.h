@@ -89,6 +89,7 @@ public:
     enum FieldType get_field_type(QString& bookName, QString& fieldName);
     QString get_field_name(QString& bookName, enum FieldType fieldType);
 
+
 private:
     bool read_subdirs(const QString& rootPathStr, QVector<QString>& result, enum QDir::Filter filter);
 
