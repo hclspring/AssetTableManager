@@ -359,7 +359,7 @@ void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, PtrQMapS2F map
     set_unknownFieldColumns(newUnknownFieldColumns);
 }
 
-void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField)
+void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField, PtrQMapS2F mapS2F)
 {
     //获取新增表的主键序号
     int primaryKeyColumnIndexOfNewTable = newTable->get_column_index(primaryKeyField);
@@ -378,7 +378,7 @@ void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField)
                 QString columnName = newTable->get_columnName(columnIndexOfNewTable);
                 //确认主表是否存在对应的字段，如果不存在，需要先添加字段，再做后续更新
                 if (this->get_column_index(columnName) < 0) {
-                    TODO:添加新字段
+                    addColumn(columnName, mapS2F);
                 }
                 //对主表对应的字段进行更新
                 if (field != FieldType::UNKNOWN && field != FieldType::COUNT) {
@@ -405,9 +405,13 @@ void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField)
 
 void DataTable::addColumn(const QString& columnName, PtrQMapS2F mapS2F)
 {
+    if (mapName2ColumnIndex.find(columnName) != mapName2ColumnIndex.end()) {
+        qCritical("已存在名为%s的列！", columnName.toStdString().c_str());
+        return;
+    }
     ++maxCol;
     for (int i = 0; i < data->size(); ++i) {
-        data->at(i).push_back("");
+        (*data)[i].push_back("");
     }
     columnNames->push_back(columnName);
     int columnIndex = maxCol - 1;
@@ -423,7 +427,36 @@ void DataTable::addColumn(const QString& columnName, PtrQMapS2F mapS2F)
         unknownFieldColumns->push_back(columnIndex);
     }
 }
-void addColumn(FieldType field);
+
+void DataTable::addColumn(FieldType field, PtrQMapF2S mapF2S)
+{
+    if (mapField2ColumnIndex.find(field) != mapField2ColumnIndex.end()) {
+        qCritical("已存在字段类为%s的列！", getFieldTypeStr(field).toStdString().c_str());
+        return;
+    }
+    ++maxCol;
+    for (int i = 0; i < data->size(); ++i) {
+        (*data)[i].push_back("");
+    }
+    QString fieldStr;
+    if (field == FieldType::COUNT) {
+        fieldStr = "无意义字段";
+    } else if (field == FieldType::UNKNOWN) {
+        fieldStr = "未知字段";
+    } else if (mapF2S->find(field) != mapF2S->end()) {
+        fieldStr = mapF2S->find(field).value();
+    } else {
+        fieldStr = getFieldTypeStr(field);
+    }
+    columnNames->push_back(fieldStr);
+    int columnIndex = maxCol - 1;
+    mapName2ColumnIndex.insert(fieldStr, columnIndex);
+    if (field != FieldType::UNKNOWN) {
+        mapField2ColumnIndex.insert(std::make_pair(field, columnIndex));
+    } else {
+        unknownFieldColumns->push_back(columnIndex);
+    }
+}
 
 void DataTable::writeExcelFile(const QString& filename, const std::vector<enum FieldType>& fieldTypes, PtrQMapF2S mapF2S)
 /* 参考代码：

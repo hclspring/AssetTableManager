@@ -108,11 +108,11 @@ public:
     void readExcelColumnNames(QXlsx::Worksheet* worksheet, PtrQMapS2F mapS2F, int columnNameRow = 1);
 
     //六、合并更新台账
-    void updateWith(DataTable* newTable, enum FieldType primaryKeyField);
+    void updateWith(DataTable* newTable, enum FieldType primaryKeyField, PtrQMapS2F mapS2F);
 
     //七、添加字段
-    void addColumn(const QString& columnName);
-    void addColumn(FieldType field);
+    void addColumn(const QString& columnName, PtrQMapS2F mapS2F);
+    void addColumn(FieldType field, PtrQMapF2S mapF2S);
 
     //七、写入表格文件
     void writeExcelFile(const QString& filename, const std::vector<enum FieldType>& fieldTypes, PtrQMapF2S mapF2S);
