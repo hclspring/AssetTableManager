@@ -54,12 +54,12 @@ std::shared_ptr<std::vector<int>> DataTable::get_unknownFieldColumns()
     return unknownFieldColumns;
 }
 
-void DataTable::set_columnNames(QVector<QString> &columnNames)
+void DataTable::set_columnNames(QVector<QString> &newColumnNames)
 {
     mapName2ColumnIndex.clear();
-    this->columnNames = std::make_shared<QVector<QString>>(columnNames);
-    for (int i = 0; i < columnNames.size(); ++i) {
-        mapName2ColumnIndex.insert(columnNames[i], i);
+    this->columnNames = std::make_shared<QVector<QString>>(newColumnNames);
+    for (int i = 0; i < newColumnNames.size(); ++i) {
+        mapName2ColumnIndex.insert(newColumnNames[i], i);
     }
 }
 
@@ -468,11 +468,19 @@ void DataTable::writeExcelFile(const QString& filename, const std::vector<enum F
     xlsx.selectSheet("Sheet0");
     QXlsx::Format titleFormat;
     setTitleFormat(titleFormat);
-    for (int i = 0; i < fieldTypes.size(); ++i) {
-        xlsx.write(1, i+1, get_columnName(i));
+    for (int i = 0; i < maxCol; ++i) {
+        xlsx.write(1, i+1, get_columnName(i), titleFormat);
     }
     QXlsx::Format contentFormat;
     setContentFormat(contentFormat);
+    for (int i = 0; i < get_data()->size(); ++i) {
+        for (int j = 0; j < maxCol; ++j) {
+            xlsx.write(i+2, j+1, get_cell_value(i, j, true), contentFormat);
+        }
+    }
+    bool saveResult = xlsx.saveAs(filename);
+    qDebug() << (saveResult ? "成功保存到Excel文件！" : "保存Excel文件失败！");
+    xlsx.deleteLater();
 }
 
 void DataTable::setTitleFormat(QXlsx::Format& format)

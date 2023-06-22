@@ -50,7 +50,7 @@ public:
     FieldType get_field(int columnIndex);//若不合法，则返回FieldType::COUNT
     void set_unknownFieldColumns(std::vector<int>& unknownFieldColumns);
     std::shared_ptr<std::vector<int>> get_unknownFieldColumns();
-    void set_columnNames(QVector<QString>& columnNames);
+    void set_columnNames(QVector<QString>& newColumnNames);
     std::shared_ptr<QVector<QString>> get_columnNames();
     QString get_columnName(int columnIndex);//若不合法，则返回NULL
 
