@@ -163,7 +163,7 @@ typedef struct {
 static void constructMapFieldType() {
     for (int i = 0; i <= static_cast<int>(FieldType::COUNT); ++i) {
         MAPFIELDSTR2TYPE.insert(QString(FIELDTYPESTR[i]), static_cast<enum FieldType>(i));
-        qDebug("constructMapFieldType: %s", FIELDTYPESTR[i]);
+        //qDebug("constructMapFieldType: %s", FIELDTYPESTR[i]);
     }
 }
 

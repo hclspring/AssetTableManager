@@ -16,14 +16,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_importFileButton_clicked()
+void MainWindow::on_importBookButton_clicked()
 {
     ImportFileDialog * dialog = new ImportFileDialog;
     dialog->exec();
     delete dialog;
 }
 
-void MainWindow::on_exportFileButton_clicked()
+void MainWindow::on_updateBookButton_clicked()
+{
+    ImportFileDialog * dialog = new ImportFileDialog;
+    dialog->exec();
+    delete dialog;
+}
+
+
+void MainWindow::on_exportBookButton_clicked()
 {
     ExportFileDialog * dialog = new ExportFileDialog;
     dialog->exec();

@@ -65,7 +65,7 @@ void DataTable::set_columnNames(QVector<QString> &newColumnNames)
 
 std::shared_ptr<QVector<QString>> DataTable::get_columnNames()
 {
-    return std::make_shared<QVector<QString>>(columnNames);
+    return columnNames;
 }
 
 QString DataTable::get_columnName(int columnIndex)

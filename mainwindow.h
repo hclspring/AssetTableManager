@@ -16,8 +16,9 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_importFileButton_clicked();
-    void on_exportFileButton_clicked();
+    void on_importBookButton_clicked();
+    void on_updateBookButton_clicked();
+    void on_exportBookButton_clicked();
 
 private:
     Ui::MainWindow *ui;
