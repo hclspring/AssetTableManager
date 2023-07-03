@@ -11,8 +11,8 @@ CONFIG += c++11
 SOURCES += \
     config.cpp \
     datatable.cpp \
-    exportfiledialog.cpp \
-    importfiledialog.cpp \
+    exportbookdialog.cpp \
+    importbookdialog.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -20,13 +20,13 @@ HEADERS += \
     config.h \
     constant.h \
     datatable.h \
-    exportfiledialog.h \
-    importfiledialog.h \
+    exportbookdialog.h \
+    importbookdialog.h \
     mainwindow.h
 
 FORMS += \
-    exportfiledialog.ui \
-    importfiledialog.ui \
+    exportbookdialog.ui \
+    importbookdialog.ui \
     mainwindow.ui
 
 # Default rules for deployment.

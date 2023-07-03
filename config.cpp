@@ -77,15 +77,16 @@ bool Config::parse_config_file()
         return false;
     }
     QFile file(getConfigFilePathName());
-    if (!file.open(QFile::ReadOnly)) {
+    if (!file.open(QIODevice::ReadOnly)) {
         qCritical("无法打开文件%s", getConfigFilePathName().toStdString().c_str());
         return false;
     }
-    QByteArray qba = file.readAll();
+    QString cc = file.readAll();
     file.close();
 
     QJsonParseError jsonError;
-    QJsonDocument document = QJsonDocument::fromJson(qba, &jsonError);
+    QJsonDocument document = QJsonDocument::fromJson(cc.toUtf8(), &jsonError);
+
     if (document.isNull() || (jsonError.error != QJsonParseError::NoError)) {
         qCritical("解析文件%s出现错误！", getConfigFilePathName().toStdString().c_str());
         return false;
@@ -94,6 +95,7 @@ bool Config::parse_config_file()
     if (document.isObject()) {
         QJsonObject object = document.object();
         if (object.contains("recordBookRootPath")) {
+            qDebug()<<"读取recordBookRootPath";
             QJsonValue value = object.value("recordBookRootPath");
             if (value.type() == QJsonValue::String) {
                 setRecordBookRootPath(value.toString());
@@ -102,6 +104,7 @@ bool Config::parse_config_file()
             }
         }
         if (object.contains("bookSettings")) {
+            qDebug()<<"读取bookSettings";
             QJsonValue value1 = object.value("bookSettings");
             if (value1.type() != QJsonValue::Array) {
                 qWarning("bookSettings的值应当是列表。");
@@ -121,15 +124,21 @@ bool Config::parse_config_file()
                         if (value2.type() == QJsonValue::String) {
                             newBookName = value2.toString();
                             recordBookNames.push_back(newBookName);
+                            qDebug() << "识别到新的bookName: " << newBookName;
                         } else {
                             qWarning("未能识别合法的bookName。");
                         }
                     } else {
                         qWarning("未能识别到bookName的key。");
                     } // end for reading key named "bookName"
+                    if (object2.contains("sheetIndex")) {
+                        ;//TODO
+                    } else {
+                        qWarning("未能识别到sheetIndex的key。");
+                    }
                     if (object2.contains("fieldMapping")) {
                         QJsonValue value2 = object2.value("fieldMapping");
-                        if (value2.type() != QJsonValue::Array) {
+                        if (value2.type() == QJsonValue::Array) {
                             QJsonArray array2 = value2.toArray();
                             for (int j = 0; j < array2.size(); ++j) {
                                 QJsonObject object3 = array2[j].toObject();
@@ -170,6 +179,7 @@ bool Config::parse_config_file()
                     }
                 } // end for iterating the array of bookSettings
             }
+            qDebug()<< "读取bookSettings结束。";
         } // end for reading key named "bookSettings"
     }
 }
@@ -182,6 +192,14 @@ QString Config::get_book_file_path(QString& bookName)
 QString Config::get_book_file_path_name(QString& bookName)
 {
     return get_book_file_path(bookName) + bookName;
+}
+
+QString Config::get_bookName(const QString& bookFilePathName)
+{
+    QChar sep = QDir::separator();
+    QStringList strList = bookFilePathName.split(sep);
+    assert(strList.size() >= 2);
+    return strList[strList.size() - 2];
 }
 
 /*
@@ -249,6 +267,28 @@ QString Config::get_field_name(QString& bookName, enum FieldType fieldType)
     return getFieldTypeStr(FieldType::COUNT);
 }
 
+PtrQMapS2F Config::get_ptr_mapS2F(QString& bookName)
+{
+    QMapPtrQMapS2F::iterator it = fieldMappingS2F.find(bookName);
+    if (it != fieldMappingS2F.end()) {
+        return it.value();
+    } else {
+        return std::make_shared<QMapString2Field>(NULL);
+    }
+}
+
+PtrQMapF2S Config::get_ptr_mapF2S(QString& bookName)
+{
+    QMapPtrQMapF2S::iterator it = fieldMappingF2S.find(bookName);
+    if (it != fieldMappingF2S.end()) {
+        return it.value();
+    } else {
+        return std::make_shared<QMapField2String>(NULL);
+    }
+}
+
+
+PtrQMapF2S get_ptr_mapF2S(QString& bookName);//TODO
 
 bool Config::read_subdirs(const QString& rootPathStr, QVector<QString>& result, enum QDir::Filter filter)
 {

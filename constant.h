@@ -12,8 +12,8 @@ enum class FieldType {
     KAPIANBIANHAO,    //卡片编号
     SHIWUZICHANBIANHAO, //实物资产编号
     ZAIJIANZICHANBIANHAO, //在建资产编号
-    GUDINGZICHANDAIMA,  //固定资产代码
-    GUDINGZICHANLEIBIE, //固定资产类别
+    ZICHANDAIMA,  //资产代码
+    ZICHANLEIBIE, //资产类别
     ZICHANMINGCHENG,    //资产名称
     SHEBEIMINGCHENG,    //设备名称
     ZICHANPINPAI,       //资产品牌
@@ -28,11 +28,11 @@ enum class FieldType {
     JICHENGHETONGHAO,    //集成合同号
     JICHENGSHANG,        //集成商
     SHULIANGPIFUGAISUAN, //数量批复概算
-    SHEBEIDANJIAPIFUGAISUAN, //设备单价批复概算
+    DANJIAPIFUGAISUAN, //单价批复概算
     ANZHUANGFEIDANJIAPIFUGAISUAN, //安装费单价批复概算
     HEJIPIFUGAISUAN,              //合计批复概算
     SHULIANGSHIJICAIGOU,        //数量实际采购
-    SHEBEIDANJIASHIJICAIGOU,    //设备单价实际采购
+    DANJIASHIJICAIGOU,    //单价实际采购
     ANZHUANGFEIDANJIASHIJICAIGOU, //安装费单价实际采购
     HEJISHIJICAIGOU,            //合计实际采购
     YUANZHI,                //原值
@@ -73,8 +73,8 @@ static const char* FIELDTYPESTR[] = {
     "KAPIANBIANHAO",    //卡片编号
     "SHIWUZICHANBIANHAO", //实物资产编号
     "ZAIJIANZICHANBIANHAO", //在建资产编号
-    "GUDINGZICHANDAIMA",  //固定资产代码
-    "GUDINGZICHANLEIBIE", //固定资产类别
+    "ZICHANDAIMA",  //资产代码
+    "ZICHANLEIBIE", //资产类别
     "ZICHANMINGCHENG",    //资产名称
     "SHEBEIMINGCHENG",    //设备名称
     "ZICHANPINPAI",       //资产品牌
@@ -89,11 +89,11 @@ static const char* FIELDTYPESTR[] = {
     "JICHENGHETONGHAO",    //集成合同号
     "JICHENGSHANG",        //集成商
     "SHULIANGPIFUGAISUAN", //数量批复概算
-    "SHEBEIDANJIAPIFUGAISUAN", //设备单价批复概算
+    "DANJIAPIFUGAISUAN", //单价批复概算
     "ANZHUANGFEIDANJIAPIFUGAISUAN", //安装费单价批复概算
     "HEJIPIFUGAISUAN",              //合计批复概算
     "SHULIANGSHIJICAIGOU",        //数量实际采购
-    "SHEBEIDANJIASHIJICAIGOU",    //设备单价实际采购
+    "DANJIASHIJICAIGOU",    //单价实际采购
     "ANZHUANGFEIDANJIASHIJICAIGOU", //安装费单价实际采购
     "HEJISHIJICAIGOU",            //合计实际采购
     "YUANZHI",                //原值

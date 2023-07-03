@@ -12,8 +12,11 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonValue>
+#include <QByteArray>
+#include <QFile>
 #include <QtDebug>
 #include <QDebug>
+#include <QTextCodec>
 #include <memory>
 
 #include "constant.h"
@@ -50,7 +53,7 @@ public:
     Config(QString& newConfigFilePathName);
 
 private:
-    QString configFilePathName = "./config.txt";
+    QString configFilePathName = "./test_json.txt";
     QString recordBookRootPath;
     QVector<QString> recordBookNames;
 
@@ -59,6 +62,10 @@ private:
 
     QMapPtrQMapS2F fieldMappingS2F;
     QMapPtrQMapF2S fieldMappingF2S;
+
+    QMapString2Int mappingS2SheetIndex;
+    QMapString2Int mappingS2ColumnNameRow;
+    QMapString2Int mappingS2DataStartRow;
 
 public:
     // getter and setter functions
@@ -82,12 +89,25 @@ public:
     // file_path_name: 指文件完整路径，不仅仅是该文件的文件名
     QString get_book_file_path(QString& bookName);
     QString get_book_file_path_name(QString& bookName);
+
+    // 根据台账文件完整路径判断台账类型
+    QString get_bookName(const QString& bookFilePathName);
+
     //bool read_mapping_names();
     // 获取指定台账类型的字段
     QVector<QString> get_field_names(QString& bookName);
     std::vector<enum FieldType> get_field_types(QString& bookName);
     enum FieldType get_field_type(QString& bookName, QString& fieldName);
     QString get_field_name(QString& bookName, enum FieldType fieldType);
+
+    // 获取指定台账类型的字段对应关系
+    PtrQMapS2F get_ptr_mapS2F(QString& bookName);
+    PtrQMapF2S get_ptr_mapF2S(QString& bookName);
+
+    // 获取指定台账类型的表格参数（sheetIndex, columnNameRow, dataStartRow）
+    int get_sheetIndex(QString& bookName); //TODO
+    int get_columnNameRow(QString& bookName); //TODO
+    int get_dataStartRow(QString& dataStartRow); //TODO
 
 
 private:

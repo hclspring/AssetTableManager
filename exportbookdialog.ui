@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ExportFileDialog</class>
- <widget class="QDialog" name="ExportFileDialog">
+ <class>ExportBookDialog</class>
+ <widget class="QDialog" name="ExportBookDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
