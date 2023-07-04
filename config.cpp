@@ -119,23 +119,15 @@ bool Config::parse_config_file()
                     QString newBookName;
                     QMapString2Field mapS2F;
                     QMapField2String mapF2S;
-                    if (object2.contains("bookName")) {
-                        QJsonValue value2 = object2.value("bookName");
-                        if (value2.type() == QJsonValue::String) {
-                            newBookName = value2.toString();
-                            recordBookNames.push_back(newBookName);
-                            qDebug() << "识别到新的bookName: " << newBookName;
-                        } else {
-                            qWarning("未能识别合法的bookName。");
-                        }
-                    } else {
-                        qWarning("未能识别到bookName的key。");
-                    } // end for reading key named "bookName"
-                    if (object2.contains("sheetIndex")) {
-                        ;//TODO
-                    } else {
-                        qWarning("未能识别到sheetIndex的key。");
+
+                    parse_config_string(object2, "bookName", newBookName);
+                    if (newBookName.length() > 0) {
+                        recordBookNames.push_back(newBookName);
                     }
+                    parse_config_index(object2, mappingS2SheetIndex, "sheetIndex", newBookName);
+                    parse_config_index(object2, mappingS2ColumnNameRow, "columnNameRow", newBookName);
+                    parse_config_index(object2, mappingS2DataStartRow, "dataStartRow", newBookName);
+
                     if (object2.contains("fieldMapping")) {
                         QJsonValue value2 = object2.value("fieldMapping");
                         if (value2.type() == QJsonValue::Array) {
@@ -143,24 +135,11 @@ bool Config::parse_config_file()
                             for (int j = 0; j < array2.size(); ++j) {
                                 QJsonObject object3 = array2[j].toObject();
                                 QString fieldTypeStr, fieldNameStr;
-                                if (object3.contains("fieldType")) {
-                                    QJsonValue value3 = object3.value("fieldType");
-                                    if (value3.type() == QJsonValue::String) {
-                                        fieldTypeStr = value3.toString();
-                                    } else {
-                                        qWarning("未能识别到合法的fieldType。");
-                                    }
-                                }
-                                if (object3.contains("fieldName")) {
-                                    QJsonValue value3 = object3.value("fieldName");
-                                    if (value3.type() == QJsonValue::String) {
-                                        fieldNameStr = value3.toString();
-                                    } else {
-                                        qWarning("未能识别到合法的fieldName。");
-                                    }
-                                }
+                                parse_config_string(object3, "fieldType", fieldTypeStr);
+                                parse_config_string(object3, "fieldName", fieldNameStr);
+
                                 if (fieldTypeStr.length() > 0 && fieldNameStr.length() > 0) {
-                                    enum FieldType fieldType = getFieldType(fieldTypeStr);//TODO：从fieldTypeStr获取fieldType
+                                    enum FieldType fieldType = getFieldType(fieldTypeStr);
                                     mapS2F.insert(fieldNameStr, fieldType);
                                     mapF2S.insert(fieldType, fieldNameStr);
                                 } else {
@@ -196,8 +175,15 @@ QString Config::get_book_file_path_name(QString& bookName)
 
 QString Config::get_bookName(const QString& bookFilePathName)
 {
-    QChar sep = QDir::separator();
+    //QChar sep = QDir::separator();
+    QChar sep = '/';
+    qDebug() << "separator is " << sep;
     QStringList strList = bookFilePathName.split(sep);
+    qDebug() << "原始字符串：" << bookFilePathName;
+    qDebug() << "拆分后字符串：";
+    for (QString str: strList) {
+        qDebug() << str;
+    }
     assert(strList.size() >= 2);
     return strList[strList.size() - 2];
 }
@@ -273,7 +259,8 @@ PtrQMapS2F Config::get_ptr_mapS2F(QString& bookName)
     if (it != fieldMappingS2F.end()) {
         return it.value();
     } else {
-        return std::make_shared<QMapString2Field>(NULL);
+        return nullptr;
+        //return std::make_shared<QMapString2Field>(NULL);
     }
 }
 
@@ -283,7 +270,8 @@ PtrQMapF2S Config::get_ptr_mapF2S(QString& bookName)
     if (it != fieldMappingF2S.end()) {
         return it.value();
     } else {
-        return std::make_shared<QMapField2String>(NULL);
+        return nullptr;
+        //return std::make_shared<QMapField2String>(NULL);
     }
 }
 
@@ -309,5 +297,65 @@ bool Config::read_subdirs(const QString& rootPathStr, QVector<QString>& result, 
         qDebug("发现目录%s", temp.toStdString().c_str());
     }
     return true;
+}
+
+int Config::get_sheetIndex(QString& bookName)
+{
+    return get_map_value_index(mappingS2SheetIndex, bookName);
+}
+
+int Config::get_columnNameRow(QString& bookName)
+{
+    return get_map_value_index(mappingS2ColumnNameRow, bookName);
+}
+
+int Config::get_dataStartRow(QString& bookName)
+{
+    return get_map_value_index(mappingS2DataStartRow, bookName);
+}
+
+
+int Config::get_map_value_index(QMapString2Int& map, QString& key)
+{
+    QMapString2Int::iterator it = map.find(key);
+    if (it != map.end()) {
+        return it.value();
+    } else {
+        return -1;
+    }
+}
+
+void Config::parse_config_index(QJsonObject& object2, QMapString2Int& map, const QString& key, QString& bookName)
+{
+    if (object2.contains(key)) {
+        QJsonValue value2 = object2.value(key);
+        if (value2.type() == QJsonValue::Double) {
+            int indexValue = value2.toInt();
+            if (bookName.length() > 0) {
+                map.insert(bookName, indexValue);
+            } else {
+                qWarning() << "识别到合法的" << key << " = " << indexValue << "，但没有合法的台账名";
+            }
+        } else {
+            qWarning() << "未能识别合法的" << key;
+        }
+    } else {
+        qWarning() << "未能识别到" << key << "的key";
+    }
+}
+
+void Config::parse_config_string(QJsonObject& object, const QString& key, QString& value)
+{
+    if (object.contains(key)) {
+        QJsonValue value3 = object.value(key);
+        if (value3.type() == QJsonValue::String) {
+            value = value3.toString();
+            qDebug() << "识别到新的" << key << ": " << value;
+        } else {
+            qWarning() << "未能识别到合法的" << key;
+        }
+    } else {
+        qWarning() << "未能识别到" << key << "的key";
+    }
 }
 

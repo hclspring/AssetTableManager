@@ -105,13 +105,18 @@ public:
     PtrQMapF2S get_ptr_mapF2S(QString& bookName);
 
     // 获取指定台账类型的表格参数（sheetIndex, columnNameRow, dataStartRow）
-    int get_sheetIndex(QString& bookName); //TODO
-    int get_columnNameRow(QString& bookName); //TODO
-    int get_dataStartRow(QString& dataStartRow); //TODO
+    int get_sheetIndex(QString& bookName);
+    int get_columnNameRow(QString& bookName);
+    int get_dataStartRow(QString& dataStartRow);
 
 
 private:
     bool read_subdirs(const QString& rootPathStr, QVector<QString>& result, enum QDir::Filter filter);
+    // get_map_value_index: 获取key为string、value为非负整数的value，如果key不存在则返回-1
+    int get_map_value_index(QMapString2Int& map, QString& key);
+    // 读取配置json文件里的索引型数据，并插入到map里
+    void parse_config_index(QJsonObject& object, QMapString2Int& map, const QString& key, QString& bookName);
+    void parse_config_string(QJsonObject& object, const QString& key, QString& value);
 
 };
 
