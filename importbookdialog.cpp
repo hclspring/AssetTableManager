@@ -3,6 +3,7 @@
 #include "importbookdialog.h"
 #include "ui_importbookdialog.h"
 #include "config.h"
+#include "datatable.h"
 
 ImportBookDialog::ImportBookDialog(Config* config, QWidget *parent)
     : QDialog(parent),

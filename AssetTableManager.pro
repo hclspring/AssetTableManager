@@ -14,7 +14,8 @@ SOURCES += \
     exportbookdialog.cpp \
     importbookdialog.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    updatebookdialog.cpp
 
 HEADERS += \
     config.h \
@@ -22,12 +23,14 @@ HEADERS += \
     datatable.h \
     exportbookdialog.h \
     importbookdialog.h \
-    mainwindow.h
+    mainwindow.h \
+    updatebookdialog.h
 
 FORMS += \
     exportbookdialog.ui \
     importbookdialog.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    updatebookdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

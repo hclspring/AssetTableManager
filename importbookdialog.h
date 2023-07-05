@@ -7,6 +7,7 @@
 #include <QList>
 
 class Config;
+class DataTable;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ImportBookDialog; }

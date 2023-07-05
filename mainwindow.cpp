@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "exportbookdialog.h"
 #include "importbookdialog.h"
+#include "updatebookdialog.h"
 #include "config.h"
 #include "datatable.h"
 
@@ -27,24 +28,26 @@ void MainWindow::on_importBookButton_clicked()
 {
     ImportBookDialog * dialog = new ImportBookDialog(config);
     dialog->exec();
-    qDebug() << "读取台账文件：" << dialog->get_filePath();
-    update_bookFilePathNameTextBrowser(dialog->get_filePath());
-    QString bookName = config->get_bookName(ui->bookFilePathNameTextBrowser->toPlainText());
-    update_bookNameTextBrowser(QString("台账类型：") + bookName);
+    if (dialog->get_filePath().length() > 0) {
+        qDebug() << "读取台账文件：" << dialog->get_filePath();
+        update_bookFilePathNameTextBrowser(dialog->get_filePath());
+        QString bookName = config->get_bookName(ui->bookFilePathNameTextBrowser->toPlainText());
+        update_bookNameTextBrowser(QString("台账类型：") + bookName);
 
-    dataTable = new DataTable;
-    dataTable->readExcelFile(ui->bookFilePathNameTextBrowser->toPlainText(),
+        dataTable = new DataTable;
+        dataTable->readExcelFile(ui->bookFilePathNameTextBrowser->toPlainText(),
                              config->get_ptr_mapS2F(bookName),
                              config->get_sheetIndex(bookName),
                              config->get_columnNameRow(bookName),
                              config->get_dataStartRow(bookName));
+    }
 
     delete dialog;
 }
 
 void MainWindow::on_updateBookButton_clicked()
 {
-    ImportBookDialog * dialog = new ImportBookDialog(config);
+    UpdateBookDialog * dialog = new UpdateBookDialog (config);
     dialog->exec();
     delete dialog;
 }
