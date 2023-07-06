@@ -14,6 +14,7 @@ UpdateBookDialog::UpdateBookDialog(Config* config, QWidget *parent) :
         qDebug() << "新增映射：" << mappingName;
         ui->comboBox->addItem(mappingName);
     }
+    ui->comboBox->setCurrentIndex(-1);
 }
 
 UpdateBookDialog::~UpdateBookDialog()
@@ -32,6 +33,9 @@ void UpdateBookDialog::on_browseButton_clicked() {
 
 void UpdateBookDialog::on_confirmButton_clicked() {
     filePath = ui->filePathEdit->toPlainText();
+    qDebug() << "选择读取更新文件：" << filePath;
+    mappingName = ui->comboBox->currentText();
+    qDebug() << "选择字段映射：" << mappingName;
     this->close();
     delete ui;
 }
