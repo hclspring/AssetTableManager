@@ -49,6 +49,7 @@ void MainWindow::on_updateBookButton_clicked()
 {
     UpdateBookDialog * dialog = new UpdateBookDialog (config);
     dialog->exec();
+    dialog->show();
     delete dialog;
 }
 

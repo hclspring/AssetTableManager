@@ -6,9 +6,10 @@
 
 class Config;
 
-namespace Ui {
-class UpdateBookDialog;
-}
+QT_BEGIN_NAMESPACE
+namespace Ui {class UpdateBookDialog;}
+QT_END_NAMESPACE
+
 
 class UpdateBookDialog : public QDialog
 {

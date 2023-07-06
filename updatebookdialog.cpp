@@ -2,22 +2,22 @@
 #include "ui_updatebookdialog.h"
 #include "config.h"
 
+
 UpdateBookDialog::UpdateBookDialog(Config* config, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::UpdateBookDialog)
 {
+    ui->setupUi(this);
     QVector<QString> bookNames = config->getRecordBookNames();
     //ui->comboBox = new QComboBox;
     for (QString mappingName : bookNames) {
         qDebug() << "新增映射：" << mappingName;
         ui->comboBox->addItem(mappingName);
     }
-    ui->setupUi(this);
 }
 
 UpdateBookDialog::~UpdateBookDialog()
 {
-    delete ui->comboBox;
     delete ui;
 }
 
