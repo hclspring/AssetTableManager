@@ -23,9 +23,12 @@ private:
     Ui::UpdateBookDialog *ui;
     QString filePath;
     QString mappingName;
+    QString primaryKeyStr;
 
 public:
     QString get_filePath();
+    QString get_mappingName();
+    QString get_primaryKeyStr();
 
 private slots:
     void on_browseButton_clicked();

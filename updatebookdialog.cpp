@@ -27,6 +27,14 @@ QString UpdateBookDialog::get_filePath() {
     return filePath;
 }
 
+QString UpdateBookDialog::get_mappingName() {
+    return mappingName;
+}
+
+QString UpdateBookDialog::get_primaryKeyStr() {
+    return primaryKeyStr;
+}
+
 void UpdateBookDialog::on_browseButton_clicked() {
     ui->filePathEdit->setText(QFileDialog::getOpenFileName(this, "选择打开文件", "./"));
 }
@@ -36,6 +44,7 @@ void UpdateBookDialog::on_confirmButton_clicked() {
     qDebug() << "选择读取更新文件：" << filePath;
     mappingName = ui->comboBox->currentText();
     qDebug() << "选择字段映射：" << mappingName;
+    primaryKeyStr = ui->primaryKeyEdit->toPlainText();
     this->close();
     delete ui;
 }

@@ -16,8 +16,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 private:
-    Config* config;
-    DataTable* dataTable;
+    Config* config = nullptr;
+    DataTable* dataTable = nullptr;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -34,6 +34,8 @@ private:
 private:
     void update_bookFilePathNameTextBrowser(const QString& text);
     void update_bookNameTextBrowser(const QString& text);
+    void update_updateFilePathNameTextBrowser(const QString& text);
+    void update_updateMappingTextBrowser(const QString& text);
 
 };
 #endif // MAINWINDOW_H
