@@ -51,6 +51,8 @@ void UpdateBookDialog::on_confirmButton_clicked() {
 
 void UpdateBookDialog::on_cancelButton_clicked() {
     filePath = "";
+    mappingName = "";
+    primaryKeyStr = "";
     this->close();
     delete ui;
 }

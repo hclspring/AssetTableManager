@@ -115,6 +115,7 @@ public:
     void addColumn(FieldType field, PtrQMapF2S mapF2S);
 
     //七、写入表格文件
+    void writeExcelFile(const QString& filename);
     void writeExcelFile(const QString& filename, const std::vector<enum FieldType>& fieldTypes, PtrQMapF2S mapF2S);
 
     //八、设置表格格式

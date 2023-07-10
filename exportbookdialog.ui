@@ -52,7 +52,7 @@
     <string>取消</string>
    </property>
   </widget>
-  <widget class="QTextEdit" name="fileDirEdit">
+  <widget class="QTextEdit" name="filePathEdit">
    <property name="geometry">
     <rect>
      <x>143</x>
@@ -86,19 +86,6 @@
    </property>
    <property name="text">
     <string>导出样式</string>
-   </property>
-  </widget>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>290</y>
-     <width>156</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
  </widget>

@@ -458,7 +458,8 @@ void DataTable::addColumn(FieldType field, PtrQMapF2S mapF2S)
     }
 }
 
-void DataTable::writeExcelFile(const QString& filename, const std::vector<enum FieldType>& fieldTypes, PtrQMapF2S mapF2S)
+//void DataTable::writeExcelFile(const QString& filename, const std::vector<enum FieldType>& fieldTypes, PtrQMapF2S mapF2S)
+void DataTable::writeExcelFile(const QString& filename)
 /* 参考代码：
  * https://blog.csdn.net/qq_37603131/article/details/128555121
  */
@@ -476,6 +477,39 @@ void DataTable::writeExcelFile(const QString& filename, const std::vector<enum F
     for (int i = 0; i < get_data()->size(); ++i) {
         for (int j = 0; j < maxCol; ++j) {
             xlsx.write(i+2, j+1, get_cell_value(i, j, true), contentFormat);
+        }
+    }
+    bool saveResult = xlsx.saveAs(filename);
+    qDebug() << (saveResult ? "成功保存到Excel文件！" : "保存Excel文件失败！");
+    xlsx.deleteLater();
+}
+
+void DataTable::writeExcelFile(const QString& filename, const std::vector<enum FieldType>& fieldTypes, PtrQMapF2S mapF2S)
+/* 参考代码：
+ * https://blog.csdn.net/qq_37603131/article/details/128555121
+ */
+{
+    QXlsx::Document xlsx;
+    xlsx.addSheet("Sheet0");
+    xlsx.selectSheet("Sheet0");
+    QXlsx::Format titleFormat;
+    setTitleFormat(titleFormat);
+    for (int i = 0; i < fieldTypes.size(); ++i) {
+        QMapField2String::iterator it = mapF2S->find(fieldTypes[i]);
+        QString columnName;
+        if (it == mapF2S->end()) {
+            columnName = getFieldTypeStr(fieldTypes[i]);
+        } else {
+            columnName = it.value();
+        }
+        xlsx.write(1, i+1, columnName, titleFormat);
+    }
+    QXlsx::Format contentFormat;
+    setContentFormat(contentFormat);
+    for (int i = 0; i < get_data()->size(); ++i) {
+        for (int j = 0; j < fieldTypes.size(); ++j) {
+            int k = get_column_index(fieldTypes[j]);
+            xlsx.write(i+2, j+1, get_cell_value(i, k, true), contentFormat);
         }
     }
     bool saveResult = xlsx.saveAs(filename);
