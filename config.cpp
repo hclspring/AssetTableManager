@@ -2,11 +2,13 @@
 
 Config::Config()
 {
+    constructMapFieldType();
     parse_config_file();
 }
 
 Config::Config(QString& newConfigFilePathName)
 {
+    constructMapFieldType();
     setConfigFilePathName(newConfigFilePathName);
     parse_config_file();
 }
@@ -137,9 +139,13 @@ bool Config::parse_config_file()
                                 QString fieldTypeStr, fieldNameStr;
                                 parse_config_string(object3, "fieldType", fieldTypeStr);
                                 parse_config_string(object3, "fieldName", fieldNameStr);
+                                qDebug() << "读取fieldType: " << fieldTypeStr;
+                                qDebug() << "读取fieldName: " << fieldNameStr;
 
                                 if (fieldTypeStr.length() > 0 && fieldNameStr.length() > 0) {
+                                    //下面这行识别到的fieldType一直是COUNT，不对！！！
                                     enum FieldType fieldType = getFieldType(fieldTypeStr);
+                                    qDebug() << "识别的fieldType: " << getFieldTypeStr(fieldType);
                                     mapS2F.insert(fieldNameStr, fieldType);
                                     mapF2S.insert(fieldType, fieldNameStr);
                                 } else {

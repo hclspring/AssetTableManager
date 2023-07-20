@@ -13,7 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     config = new Config;
     ui->setupUi(this);
     ui->bookFilePathNameTextBrowser->setText("");
-    ui->bookNameTextBrowser->setText("");
+    ui->inputStyleTextBrowser->setText("");
+    ui->settingButton->setDisabled(true);
     ui->exportBookButton->setDisabled(true);
     ui->updateBookButton->setDisabled(true);
     //connect(ui->importFileButton, SIGNAL(clicked()), this, SLOT(on_importFileButton_clicked()));
@@ -33,17 +34,20 @@ void MainWindow::on_importBookButton_clicked()
     if (dialog->get_filePath().length() > 0) {
         qDebug() << "读取台账文件：" << dialog->get_filePath();
         update_bookFilePathNameTextBrowser(dialog->get_filePath());
-        QString bookName = config->get_bookName(ui->bookFilePathNameTextBrowser->toPlainText());
-        update_bookNameTextBrowser(QString("台账类型：") + bookName);
+        QString inputStyle = dialog->get_inputStyle();
+        update_inputStyleTextBrowser(QString("导入样式：") + inputStyle);
 
-        qDebug() << "开始读取台账文件……";
+        qDebug() << "初始化dataTable……";
         if (dataTable != nullptr) delete dataTable;
         dataTable = new DataTable;
+        qDebug() << "开始读取台账文件……";
         dataTable->readExcelFile(ui->bookFilePathNameTextBrowser->toPlainText(),
-                             config->get_ptr_mapS2F(bookName),
-                             config->get_sheetIndex(bookName),
-                             config->get_columnNameRow(bookName),
-                             config->get_dataStartRow(bookName));
+                             config->get_ptr_mapS2F(inputStyle),
+                             config->get_sheetIndex(inputStyle),
+                             config->get_columnNameRow(inputStyle),
+                             config->get_dataStartRow(inputStyle));
+        qDebug() << "结束读取台账文件……";
+        append_updateProcessTextBrowser("已导入台账文件：" + dialog->get_filePath());
     }
     ui->updateBookButton->setDisabled(false);
     ui->exportBookButton->setDisabled(true);
@@ -52,7 +56,9 @@ void MainWindow::on_importBookButton_clicked()
 
 void MainWindow::on_updateBookButton_clicked()
 {
+    qDebug() << "进入函数MainWindow::on_updateBookButton_clicked()";
     UpdateBookDialog * dialog = new UpdateBookDialog(config);
+    qDebug() << "完成初始化UpdateBookDialog";
     dialog->exec();
     if (dialog->get_filePath().length() > 0) {
         QString filePath = dialog->get_filePath();
@@ -62,15 +68,18 @@ void MainWindow::on_updateBookButton_clicked()
         update_updateFilePathNameTextBrowser(filePath);
         update_updateMappingTextBrowser(QString("字段映射：") + bookName);
 
-        qDebug() << "开始读取更新文件……";
         DataTable * updateTable = new DataTable;
+        qDebug() << "开始读取更新文件……";
         updateTable->readExcelFile(ui->updateFilePathNameTextBrowser->toPlainText(),
                              config->get_ptr_mapS2F(bookName),
                              config->get_sheetIndex(bookName),
                              config->get_columnNameRow(bookName),
                              config->get_dataStartRow(bookName));
+        qDebug() << "读取更新文件完毕，开始更新……";
         dataTable->updateWith(updateTable, config->get_field_type(bookName, primaryKeyStr), config->get_ptr_mapS2F(bookName));
-        update_updateProcessTextBrowser("已按照文件" + filePath + "进行更新。");
+        qDebug() << "更新后的列数：" << dataTable->get_columnNames()->size();
+        qDebug() << "更新后的字段数：" << dataTable->get_fields()->size();
+        append_updateProcessTextBrowser("已按照此文件更新台账：" + filePath);
         delete updateTable;
         ui->exportBookButton->setDisabled(false);
     }
@@ -85,7 +94,9 @@ void MainWindow::on_exportBookButton_clicked()
     if (dialog->get_filePath().length() > 0) {
         QString filePath = dialog->get_filePath();
         QString outputStyle = dialog->get_outputStyle();
+        qDebug() << "输出格式：" << outputStyle;
         dataTable->writeExcelFile(filePath, config->get_field_types(outputStyle), config->get_ptr_mapF2S(outputStyle));
+        append_updateProcessTextBrowser("已导出台账文件：" + filePath);
     }
     delete dialog;
 }
@@ -103,9 +114,9 @@ void MainWindow::update_bookFilePathNameTextBrowser(const QString& text)
 }
 
 
-void MainWindow::update_bookNameTextBrowser(const QString& text)
+void MainWindow::update_inputStyleTextBrowser(const QString& text)
 {
-    updateTextBrowserContent(text, ui->bookNameTextBrowser);
+    updateTextBrowserContent(text, ui->inputStyleTextBrowser);
     /*
     ui->bookNameTextBrowser->setText(text);
     QPalette palette = ui->bookNameTextBrowser->palette();
@@ -147,17 +158,25 @@ void MainWindow::update_updatePrimaryKeyTextBrowser(const QString& text)
     */
 }
 
-void MainWindow::update_updateProcessTextBrowser(const QString& text)
+void MainWindow::append_updateProcessTextBrowser(const QString& text)
 {
-    QString currentText = ui->updateProcessTextBrowser->toPlainText();
-    QString newText = currentText + text;
-    updateTextBrowserContent(newText, ui->updateProcessTextBrowser);
+    appendTextBrowserContent(text, ui->updateProcessTextBrowser);
 }
 
-void MainWindow::updateTextBrowserContent(const QString& text, QTextBrowser* qtb)
+void MainWindow::updateTextBrowserContent(const QString& newText, QTextBrowser* qtb)
 {
-    qtb->setText(text);
+    qtb->setText(newText);
     QPalette palette = qtb->palette();
     palette.setColor(QPalette::Text, Qt::red);
     qtb->setPalette(palette);
+}
+
+void MainWindow::appendTextBrowserContent(const QString& newText, QTextBrowser* qtb)
+{
+    QString currentText = qtb->toPlainText();
+    if (currentText.endsWith('\n') == false) {
+        currentText.append("\n");
+    }
+    currentText.append(newText);
+    updateTextBrowserContent(currentText, qtb);
 }

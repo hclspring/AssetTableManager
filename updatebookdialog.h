@@ -21,6 +21,7 @@ public:
 
 private:
     Ui::UpdateBookDialog *ui;
+    Config *config;
     QString filePath;
     QString mappingName;
     QString primaryKeyStr;
@@ -34,7 +35,7 @@ private slots:
     void on_browseButton_clicked();
     void on_confirmButton_clicked();
     void on_cancelButton_clicked();
-    void on_comboBox_currentTextChanged();
+    void on_mappingComboBox_currentTextChanged();
 };
 
 #endif // UPDATEBOOKDIALOG_H

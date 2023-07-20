@@ -6,7 +6,6 @@
 
 int main(int argc, char *argv[])
 {
-    constructMapFieldType();
     QApplication a(argc, argv);
     MainWindow w;
     w.show();

@@ -75,7 +75,7 @@
     <string>选择字段映射关系</string>
    </property>
   </widget>
-  <widget class="QComboBox" name="comboBox">
+  <widget class="QComboBox" name="mappingComboBox">
    <property name="geometry">
     <rect>
      <x>140</x>
@@ -85,11 +85,11 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLabel" name="label_2">
+  <widget class="QLabel" name="primaryKeyLabel">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>230</y>
+     <x>30</x>
+     <y>226</y>
      <width>101</width>
      <height>31</height>
     </rect>
@@ -98,14 +98,17 @@
     <string>选择对应主键</string>
    </property>
   </widget>
-  <widget class="QTextEdit" name="primaryKeyEdit">
+  <widget class="QComboBox" name="primaryKeyComboBox">
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>230</y>
+     <y>220</y>
      <width>211</width>
-     <height>31</height>
+     <height>41</height>
     </rect>
+   </property>
+   <property name="currentText">
+    <string/>
    </property>
   </widget>
  </widget>

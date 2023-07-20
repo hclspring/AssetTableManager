@@ -233,6 +233,12 @@ std::shared_ptr<QVector<QString>> DataTable::get_formatted_row(int rowIndex, QVe
 {
     QVector<QString> result;
     assert(check_row_index(rowIndex));
+    QString printTemp = "get_formatted_row所需要的字段列表为：";
+    for (enum FieldType field : referenceFields) {
+        printTemp.append(getFieldTypeStr(field)).append("; ");
+    }
+    qDebug() << printTemp;
+    printTemp = "";
     for (enum FieldType field : referenceFields) {
         result.push_back(std::move(get_cell_value(rowIndex, field, true)));
     }
@@ -312,10 +318,11 @@ void DataTable::readExcelFile(const QString &filename, PtrQMapS2F mapS2F, int sh
             QXlsx::Worksheet* worksheet = (QXlsx::Worksheet*) sheet;
             worksheet->getFullCells(&maxRow, &maxCol);
             qDebug() << maxRow << "行，" << maxCol << "列";
+            qDebug() << "开始读取表格数据";
             readExcelData(worksheet, dataStartRow);
+            qDebug() << "表格数据读取完毕，开始读取分析字段名";
             readExcelColumnNames(worksheet, mapS2F, columnNameRow);
-            delete worksheet;
-            delete sheet;
+            qDebug() << "字段名读取完毕";
         }
     } else {
         qDebug() << "读取文件" << filename << "失败！";
@@ -326,49 +333,80 @@ void DataTable::readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow)
 {
     QVector<QString> row;
     row.resize(maxCol);
-    data->fill(row, maxRow - dataStartRow + 1);
+    qDebug() << "maxRow = " << maxRow << ", dataStartRow = " << dataStartRow << ", maxCol = " << maxCol;
+    QVector<QVector<QString>> temp;
+    temp.fill(row, maxRow - dataStartRow + 1);
+    set_data(temp);
+    qDebug() << "完成data初始化";
     for (int r = dataStartRow; r <= maxRow; ++r) {
         for (int c = 1; c <= maxCol; ++c) {
-            (*data)[r-dataStartRow][c-1] = worksheet->cellAt(r, c)->value().toString();
+            if (worksheet->cellAt(r, c) == nullptr){
+                qDebug() << "读取第" << r << "行、第" << c << "列：空值";
+                (*data)[r-dataStartRow][c-1] = "";
+            } else {
+                qDebug() << "读取第" << r << "行、第" << c << "列：" << worksheet->cellAt(r, c)->value().toString();
+                (*data)[r-dataStartRow][c-1] = worksheet->cellAt(r, c)->value().toString();
+            }
         }
     }
 }
 
 void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, PtrQMapS2F mapS2F, int columnNameRow)
 {
-    if (maxCol > 0) {
-        columnNames->resize(maxCol);
-    } else {
+    if (maxCol <= 0) {
         qWarning("maxCol不是正数！");
+        return;
     }
     QVector<FieldType> newFields;
     QVector<QString> newColumnNames;
     std::vector<int> newUnknownFieldColumns;
     for (int i = 1; i <= maxCol; ++i) {
-        newColumnNames.push_back(worksheet->read(columnNameRow, i).toString());
-        newFields.push_back(mapS2F->find(newColumnNames[i-1]).value());
-        if (mapS2F->find(newColumnNames[i-1]) != mapS2F->end()) {
-            newFields.push_back(mapS2F->find(newColumnNames[i-1]).value());
+        QString newColumnName = worksheet->read(columnNameRow, i).toString();
+        qDebug() << "读取Excel文件第 " << i << " 个列名是：" << newColumnName;
+        QMapString2Field::iterator it = mapS2F->find(newColumnName);
+        newColumnNames.push_back(newColumnName);
+        if (it != mapS2F->end()) {
+            newFields.push_back(it.value());
+            qDebug() << "对应的字段是：" << getFieldTypeStr(it.value());
         } else {
             newFields.push_back(FieldType::UNKNOWN);
             newUnknownFieldColumns.push_back(i-1);
+            qDebug() << "对应的字段是：UNKNOWN";
         }
     }
     set_columnNames(newColumnNames);
     set_fields(newFields);
     set_unknownFieldColumns(newUnknownFieldColumns);
+    QString printTemp = "读取的列名清单：";
+    for (QString s : *(this->columnNames)) {
+        printTemp.append(s).append("; ");
+    }
+    qDebug() << printTemp;
+    printTemp = "读取的字段清单：";
+    for (FieldType ft : *(this->fields)) {
+        printTemp.append(getFieldTypeStr(ft)).append("; ");
+    }
+    qDebug() << printTemp;
+    printTemp = "未知字段所在列有：";
+    for (int fc : *(this->unknownFieldColumns)) {
+        printTemp.append(QString(fc)).append("; ");
+    }
+    qDebug() << printTemp;
 }
 
 void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField, PtrQMapS2F mapS2F)
 {
     //获取新增表的主键序号
     int primaryKeyColumnIndexOfNewTable = newTable->get_column_index(primaryKeyField);
+    qDebug() << "更新表的主键序号是" << primaryKeyColumnIndexOfNewTable;
     //对每一行数据做同样的操作
     for (int rowIndexOfNewTable = 0; rowIndexOfNewTable < newTable->get_data()->size(); ++rowIndexOfNewTable) {
         //获取主键值
         QString primaryKeyValue = newTable->get_data()->at(rowIndexOfNewTable).at(primaryKeyColumnIndexOfNewTable);
+        qDebug() << "更新表第" << rowIndexOfNewTable << "行的主键值为" << primaryKeyValue;
         //获取主表中的行序号
         int rowIndexOfMainTable = this->get_row_index(primaryKeyField, primaryKeyValue);
+        qDebug() << "该主键值在主表中的行号是" << rowIndexOfMainTable;
         //如果主表中存在对应的行，则做更新
         if (rowIndexOfMainTable >= 0) {
             //对新增表该行数据的每一列做同样的操作
@@ -376,15 +414,19 @@ void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField, 
                 //获取每一列的字段
                 enum FieldType field = newTable->get_field(columnIndexOfNewTable);
                 QString columnName = newTable->get_columnName(columnIndexOfNewTable);
+                qDebug() << "对字段名为 " << columnName << "的列开始处理";
                 //确认主表是否存在对应的字段，如果不存在，需要先添加字段，再做后续更新
                 if (this->get_column_index(columnName) < 0) {
+                    qDebug() << "主表不存在该字段，在主表中添加这一列";
                     addColumn(columnName, mapS2F);
                 }
                 //对主表对应的字段进行更新
                 if (field != FieldType::UNKNOWN && field != FieldType::COUNT) {
                     this->update_cell(rowIndexOfMainTable, field, newTable->get_cell_value(rowIndexOfNewTable, columnIndexOfNewTable, true));
+                    qDebug() << "更新字段为" << getFieldTypeStr(field) << "的数据";
                 } else if (field == FieldType::UNKNOWN) {
                     this->update_cell(rowIndexOfMainTable, columnName, newTable->get_cell_value(rowIndexOfNewTable, columnIndexOfNewTable, true));
+                    qDebug() << "更新列名为" << columnName << "的数据";
                 } else {
                     qDebug() << "无法更新FieldType == COUNT的字段";
                 }
@@ -392,7 +434,17 @@ void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField, 
         } //否则（主表中不存在对应的行），则新增一行数据
         else if (rowIndexOfMainTable == -1){
             // 将新增表的行按照主表的字段进行格式化
+            QString printTemp = "主表字段清单为：";
+            for (FieldType f : *(this->get_fields())) {
+                printTemp.append(getFieldTypeStr(f)).append("; ");
+            }
+            qDebug() << printTemp;
             std::shared_ptr<QVector<QString>> formattedRow = newTable->get_formatted_row(rowIndexOfNewTable, *(this->get_fields()));
+            printTemp = "主表不存在该主键值，因此新增一行，将更新表中数据行格式化为主表格式：";
+            for (QString s : *formattedRow) {
+                printTemp.append(s).append("; ");
+            }
+            qDebug() << printTemp;
             // 在主表中新增行
             this->add_row(*formattedRow);
         } else {
@@ -494,6 +546,7 @@ void DataTable::writeExcelFile(const QString& filename, const std::vector<enum F
     xlsx.selectSheet("Sheet0");
     QXlsx::Format titleFormat;
     setTitleFormat(titleFormat);
+    qDebug() << "开始写列名……";
     for (int i = 0; i < fieldTypes.size(); ++i) {
         QMapField2String::iterator it = mapF2S->find(fieldTypes[i]);
         QString columnName;
@@ -502,14 +555,17 @@ void DataTable::writeExcelFile(const QString& filename, const std::vector<enum F
         } else {
             columnName = it.value();
         }
+        qDebug() << "第 " << i << " 个列名：" << columnName;
         xlsx.write(1, i+1, columnName, titleFormat);
     }
     QXlsx::Format contentFormat;
     setContentFormat(contentFormat);
+    qDebug() << "开始写数据……";
     for (int i = 0; i < get_data()->size(); ++i) {
         for (int j = 0; j < fieldTypes.size(); ++j) {
             int k = get_column_index(fieldTypes[j]);
             xlsx.write(i+2, j+1, get_cell_value(i, k, true), contentFormat);
+            qDebug() << "第 " << i << " 行、第 " << k << " 列：" << get_cell_value(i, k, true);
         }
     }
     bool saveResult = xlsx.saveAs(filename);

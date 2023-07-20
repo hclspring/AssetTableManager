@@ -4,11 +4,12 @@
 #include <QString>
 #include <QVector>
 #include <QMap>
+#include <QDebug>
 #include <memory>
 
 
 enum class FieldType {
-    XULIEHAO,         //序列号（设备出厂编号）
+    XULIEHAO = 0,         //序列号（设备出厂编号）
     KAPIANBIANHAO,    //卡片编号
     SHIWUZICHANBIANHAO, //实物资产编号
     ZAIJIANZICHANBIANHAO, //在建资产编号
@@ -64,6 +65,11 @@ enum class FieldType {
     RUANJIANFUZEREN,            //软件负责人
     SHIYONGRENBEIZHU,           //使用人备注
     ZICHANGUANLIYUANBEIZHU,     //资产管理员备注
+    ZICHANFENLEI,               //资产分类
+    MACDIZHI,                   //MAC地址
+    SHIYONGZERENZHUTI,          //使用责任主体
+    DAIGUANBUMEN,               //代管部门
+    DAIGUANREN,                 //代管人
     UNKNOWN,                    //未知字段
     COUNT
 };
@@ -125,10 +131,21 @@ static const char* FIELDTYPESTR[] = {
     "RUANJIANFUZEREN",            //软件负责人
     "SHIYONGRENBEIZHU",           //使用人备注
     "ZICHANGUANLIYUANBEIZHU",     //资产管理员备注
+    "ZICHANFENLEI",               //资产分类
+    "MACDIZHI",                   //MAC地址
+    "SHIYONGZERENZHUTI",          //使用责任主体
+    "DAIGUANBUMEN",               //代管部门
+    "DAIGUANREN",                 //代管人
     "UNKNOWN",                    //未知字段
     "COUNT"
 };
 
+static const enum FieldType DISTINCTFIELDS[] = {
+    FieldType::KAPIANBIANHAO,
+    FieldType::SHIWUZICHANBIANHAO,
+    FieldType::ZAIJIANZICHANBIANHAO,
+    FieldType::XULIEHAO
+};
 
 
 typedef QMap<QString, enum FieldType> QMapString2Field;
@@ -141,7 +158,7 @@ typedef QMap<QString, PtrQMapF2S> QMapPtrQMapF2S;
 
 typedef QMap<QString, int> QMapString2Int;
 
-static QMap<QString, enum FieldType> MAPFIELDSTR2TYPE;
+static QMapString2Field MAPFIELDSTR2TYPE;
 //QMap<enum FieldType, QString> MAPFIELDTYPE2STR;
 static void constructMapFieldType();
 static enum FieldType getFieldType(const QString& fieldTypeStr);
@@ -161,17 +178,31 @@ typedef struct {
 
 
 static void constructMapFieldType() {
-    for (int i = 0; i <= static_cast<int>(FieldType::COUNT); ++i) {
+    qDebug() << "进入静态函数：constructMapFieldType";
+    for (int i = 0; i < static_cast<int>(FieldType::COUNT); ++i) {
         MAPFIELDSTR2TYPE.insert(QString(FIELDTYPESTR[i]), static_cast<enum FieldType>(i));
-        //qDebug("constructMapFieldType: %s", FIELDTYPESTR[i]);
+        qDebug("constructMapFieldType[%d]: %s", i, FIELDTYPESTR[i]);
+    }
+    for (QMapString2Field::iterator it = MAPFIELDSTR2TYPE.begin(); it != MAPFIELDSTR2TYPE.end(); ++it) {
+        QString str1 = it.key();
+        QString str2 = "";
+        str2.append(str1);
+        QString * str1addr = &str1;
+        QString * str2addr = &str2;
+        enum FieldType ft = getFieldType(str2);
+        qDebug() << &str1 << " -- " << str1 << " -- " << static_cast<int>(it.value());
+        qDebug() << &str2 << " -- " << str2 << " -- " << static_cast<int>(ft);
     }
 }
 
 static enum FieldType getFieldType(const QString& fieldTypeStr) {
-    QMap<QString, enum FieldType>::iterator it = MAPFIELDSTR2TYPE.find(fieldTypeStr);
+    qDebug() << "进入函数getFieldType: 参数fieldTypeStr = " << fieldTypeStr;
+    QMapString2Field::iterator it = MAPFIELDSTR2TYPE.find(fieldTypeStr);
     if (it != MAPFIELDSTR2TYPE.end()) {
+        qDebug() << "识别的fieldType为" << static_cast<int>(it.value());
         return it.value();
     } else {
+        qDebug() << "未识别到fieldType，记为COUNT";
         return FieldType::COUNT;
     }
 }

@@ -53,13 +53,14 @@ public:
     Config(QString& newConfigFilePathName);
 
 private:
-    QString configFilePathName = "./test_json.txt";
+    QString configFilePathName = "./config.txt";
     QString recordBookRootPath;
     QVector<QString> recordBookNames;
 
     //QString fieldMappingRootPath;
     //QVector<QString> fieldMappingNames;
 
+    //以下是两层map，第一层是bookName -> 字段映射，第二层是该bookName下字段汉字名称 -> 字段枚举类型（或反过来）
     QMapPtrQMapS2F fieldMappingS2F;
     QMapPtrQMapF2S fieldMappingF2S;
 

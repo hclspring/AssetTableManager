@@ -24,9 +24,11 @@ public:
 private:
     Ui::ImportBookDialog *ui;
     QString filePath;
+    QString inputStyle;
 
 public:
     QString get_filePath();
+    QString get_inputStyle();
 
 private slots:
     void on_browseButton_clicked();
