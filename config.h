@@ -55,18 +55,24 @@ public:
 private:
     QString configFilePathName = "./config.txt";
     QString recordBookRootPath;
-    QVector<QString> recordBookNames;
-
-    //QString fieldMappingRootPath;
-    //QVector<QString> fieldMappingNames;
-
-    //以下是两层map，第一层是bookName -> 字段映射，第二层是该bookName下字段汉字名称 -> 字段枚举类型（或反过来）
-    QMapPtrQMapS2F fieldMappingS2F;
-    QMapPtrQMapF2S fieldMappingF2S;
+    QVector<QString> exportBookTypes;
 
     QMapString2Int mappingS2SheetIndex;
     QMapString2Int mappingS2ColumnNameRow;
     QMapString2Int mappingS2DataStartRow;
+    QMapStr2Vec mappingS2ColumnNames;
+    QMapStr2Str mappingExportTarget2Source;
+    QMapStr2Str mappingImportTarget2Source;
+
+
+    /*
+     * 以下成员变量预计后续用不到，待删除
+     */
+    QVector<QString> recordBookNames;
+    //以下是两层map，第一层是bookName -> 字段映射，第二层是该bookName下字段汉字名称 -> 字段枚举类型（或反过来）
+    QMapPtrQMapS2F fieldMappingS2F;
+    QMapPtrQMapF2S fieldMappingF2S;
+
 
 public:
     // getter and setter functions
@@ -74,12 +80,33 @@ public:
     void setConfigFilePathName(const QString &newConfigFileName);
     const QString &getRecordBookRootPath() const;
     void setRecordBookRootPath(const QString &newRecordBookRootPath);
+
+
+    // 解析配置文件
+    bool parse_config_file_v2();//有用
+
+    // 获取指定台账类型的表格参数（sheetIndex, columnNameRow, dataStartRow）
+    int get_sheetIndex(QString& exportBookType);//有用
+    int get_columnNameRow(QString& exportBookType);//有用
+    int get_dataStartRow(QString& exportBookType);//有用
+
+private:
+    bool read_subdirs(const QString& rootPathStr, QVector<QString>& result, enum QDir::Filter filter);
+    // get_map_value_index: 获取key为string、value为非负整数的value，如果key不存在则返回-1
+    int get_map_value_index(QMapString2Int& map, QString& key);
+    // 读取配置json文件里的索引型数据，并插入到map里
+    void parse_config_index(QJsonObject& object, QMapString2Int& map, const QString& key, QString& bookType);//有用
+    void parse_config_string(QJsonObject& object, const QString& key, QString& value);//有用
+
+
+
+
+    /*
+     * 以下成员函数预计后续用不到，待删除
+     */
+public:
     const QVector<QString> &getRecordBookNames() const;
     void setRecordBookNames(const QVector<QString> &newRecordBookNames);
-//    const QString &getFieldMappingRootPath() const;
-//    void setFieldMappingRootPath(const QString &newFieldMappingRootPath);
-//    const QVector<QString> &getFieldMappingNames() const;
-//    void setFieldMappingNames(const QVector<QString> &newFieldMappingNames);
 
     // 解析配置文件
     bool parse_config_file();
@@ -105,19 +132,8 @@ public:
     PtrQMapS2F get_ptr_mapS2F(QString& bookName);
     PtrQMapF2S get_ptr_mapF2S(QString& bookName);
 
-    // 获取指定台账类型的表格参数（sheetIndex, columnNameRow, dataStartRow）
-    int get_sheetIndex(QString& bookName);
-    int get_columnNameRow(QString& bookName);
-    int get_dataStartRow(QString& dataStartRow);
 
 
-private:
-    bool read_subdirs(const QString& rootPathStr, QVector<QString>& result, enum QDir::Filter filter);
-    // get_map_value_index: 获取key为string、value为非负整数的value，如果key不存在则返回-1
-    int get_map_value_index(QMapString2Int& map, QString& key);
-    // 读取配置json文件里的索引型数据，并插入到map里
-    void parse_config_index(QJsonObject& object, QMapString2Int& map, const QString& key, QString& bookName);
-    void parse_config_string(QJsonObject& object, const QString& key, QString& value);
 
 };
 

@@ -72,6 +72,136 @@ bool Config::read_book_names()
 }
 */
 
+
+bool Config::parse_config_file_v2()
+{
+    if (getConfigFilePathName().isEmpty()) {
+        qWarning("配置文件路径和名称为空。");
+        return false;
+    }
+    QFile file(getConfigFilePathName());
+    if (!file.open(QIODevice::ReadOnly)) {
+        qCritical("无法打开文件%s", getConfigFilePathName().toStdString().c_str());
+        return false;
+    }
+    QString cc = file.readAll();
+    file.close();
+
+    QJsonParseError jsonError;
+    QJsonDocument document = QJsonDocument::fromJson(cc.toUtf8(), &jsonError);
+
+    if (document.isNull() || (jsonError.error != QJsonParseError::NoError)) {
+        qCritical("解析文件%s出现错误！", getConfigFilePathName().toStdString().c_str());
+        return false;
+    }
+
+    if (document.isObject()) {
+        QJsonObject object = document.object();
+        if (object.contains("recordBookRootPath")) {
+            qDebug()<<"读取recordBookRootPath";
+            QJsonValue value = object.value("recordBookRootPath");
+            if (value.type() == QJsonValue::String) {
+                setRecordBookRootPath(value.toString());
+            } else {
+                qWarning("台账存放路径为空。");
+            }
+        }
+        if (object.contains("exportSettings")) {
+            qDebug()<<"读取exportSettings";
+            QJsonValue value1 = object.value("exportSettings");
+            if (value1.type() != QJsonValue::Array) {
+                qWarning("exportSettings的值应当是列表。");
+            } else {
+                QJsonArray array = value1.toArray();
+                int arraySize = array.size();
+
+                this->exportBookTypes.clear();
+                this->mappingS2SheetIndex.clear();
+                this->mappingS2ColumnNameRow.clear();
+                this->mappingS2DataStartRow.clear();
+                this->mappingS2ColumnNames.clear();
+
+                for (int i = 0; i < arraySize; ++i) {
+                    QJsonObject object2 = array[i].toObject();
+
+                    if (object2.contains("exportBookType")) {
+                        QString newBookType;
+                        parse_config_string(object2, "exportBookType", newBookType);
+                        if (newBookType.length() > 0) {
+                            recordBookNames.push_back(newBookType);
+                        }
+                        parse_config_index(object2, mappingS2SheetIndex, "sheetIndex", newBookType);
+                        parse_config_index(object2, mappingS2ColumnNameRow, "columnNameRow", newBookType);
+                        parse_config_index(object2, mappingS2DataStartRow, "dataStartRow", newBookType);
+
+                        if (object2.contains("columnNames")) {
+                            QJsonValue value2 = object2.value("columnNames");
+                            if (value2.type() == QJsonValue::Array) {
+                                QJsonArray array2 = value2.toArray();
+                                QVector<QString> columnNames;
+                                for (int j = 0; j < array2.size(); ++j) {
+                                    QString columnName = array2[j].toString();
+                                    columnNames.push_back(columnName);
+                                }
+                                mappingS2ColumnNames.insert(newBookType, std::make_shared<QVecString>(columnNames));
+                            }
+                        }
+                    } //如果该项目用于提供输出表格字段
+                    else if (object2.contains("exportColumnDefinition")) {
+                        QJsonValue value2 = object2.value("exportColumnDefinition");
+                        if (value2.type() == QJsonValue::Array) {
+                            QJsonArray array2 = value2.toArray();
+                            for (int j = 0; j < array2.size(); ++j) {
+                                QJsonObject object3 = array2[j].toObject();
+                                QString targetStr, sourceStr;
+                                parse_config_string(object3, "target", targetStr);
+                                parse_config_string(object3, "source", sourceStr);
+                                mappingExportTarget2Source.insert(targetStr, sourceStr);
+                            }
+                        } else {
+                            qWarning() << "exportColumnDefinition的值应当是列表。";
+                        }
+                    } else {
+                        qWarning() << "发现未知关键词";
+                    }
+
+                } // end for iterating the array of bookSettings
+            }
+            qDebug()<< "读取bookSettings结束。";
+        } else if (object.contains("importSettings")) {
+            QJsonValue value1 = object.value("importSettings");
+            if (value1.type() != QJsonValue::Array) {
+                qWarning("importSettings的值应当是列表。");
+            } else {
+                QJsonArray array = value1.toArray();
+                int arraySize = array.size();
+                for (int i = 0; i < arraySize; ++i) {
+                    QJsonObject object2 = array[i].toObject();
+
+                    if (object2.contains("importColumnDefinition")) {
+                        QJsonValue value2 = object2.value("importColumnDefinition");
+                        if (value2.type() == QJsonValue::Array) {
+                            QJsonArray array2 = value2.toArray();
+                            for (int j = 0; j < array2.size(); ++j) {
+                                QJsonObject object3 = array2[j].toObject();
+                                QString targetStr, sourceStr;
+                                parse_config_string(object3, "target", targetStr);
+                                parse_config_string(object3, "source", sourceStr);
+                                mappingImportTarget2Source.insert(targetStr, sourceStr);
+                            }
+                        } else {
+                            qWarning() << "importColumnDefinition的值应当是列表。";
+                        }
+                    } else {
+                        qWarning() << "发现未知关键词";
+                    }
+                } // for循环
+            }
+        }
+    }
+
+}
+
 bool Config::parse_config_file()
 {
     if (getConfigFilePathName().isEmpty()) {
@@ -331,14 +461,14 @@ int Config::get_map_value_index(QMapString2Int& map, QString& key)
     }
 }
 
-void Config::parse_config_index(QJsonObject& object2, QMapString2Int& map, const QString& key, QString& bookName)
+void Config::parse_config_index(QJsonObject& object2, QMapString2Int& map, const QString& key, QString& bookType)
 {
     if (object2.contains(key)) {
         QJsonValue value2 = object2.value(key);
         if (value2.type() == QJsonValue::Double) {
             int indexValue = value2.toInt();
-            if (bookName.length() > 0) {
-                map.insert(bookName, indexValue);
+            if (bookType.length() > 0) {
+                map.insert(bookType, indexValue);
             } else {
                 qWarning() << "识别到合法的" << key << " = " << indexValue << "，但没有合法的台账名";
             }

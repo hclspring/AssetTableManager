@@ -160,7 +160,7 @@ void MainWindow::update_updatePrimaryKeyTextBrowser(const QString& text)
 
 void MainWindow::append_updateProcessTextBrowser(const QString& text)
 {
-    appendTextBrowserContent(text, ui->updateProcessTextBrowser);
+    appendTextBrowserContent(" * " + text, ui->updateProcessTextBrowser);
 }
 
 void MainWindow::updateTextBrowserContent(const QString& newText, QTextBrowser* qtb)
