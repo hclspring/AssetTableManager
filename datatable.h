@@ -51,6 +51,7 @@ private:
     // columnNames存放所有的列名（包括未能识别出含义的列名）
 
 public:
+    //第一部分全部已确认无误
     //一、对成员变量的set/get函数
     void set_data(QVector<QVector<QString>>& data);
     //void set(std::vector<int>& rowIndices, DataTable& referenceDataTable);
@@ -60,16 +61,17 @@ public:
     QString get_columnName(int columnIndex);//若不合法，则返回NULL
 
 
+    //第二部分已全部确认无误
     //二、根据已知信息判断行序号或列序号
     // get_column_index: 能找到，返回序号，否则返回-1
     int get_column_index(const QString& columnName);
-    // get_column_indices：如果所有字段都能找到，返回true；如果出现找不到的字段，根据retainUnfoundColumns，若为false则返回false，若为true则在参数中对应位置填写-1
-    bool get_column_indices(QVector<QString>& columnNames, std::vector<int>& outputColumnIndices, bool retainUnfoundColumns);
+    // get_column_indices：如果所有字段都能找到，返回true；如果出现找不到的字段，则在参数中对应位置填写-1，返回false
+    bool get_column_indices(QVector<QString>& columnNames, std::vector<int>& outputColumnIndices);
 
 
     //三、获取数据：如果ignoreUnfoundColumn为true，则没有对应字段时返回""，否则报错退出
     bool check_row_index(int rowIndex);
-    bool check_column_index(int columnIndex);
+    bool check_column_index(int columnIndex); //已确认无误
     bool check_row_column_index(int rowIndex, int columnIndex);
     QString get_cell_value(int rowIndex, int columnIndex, bool ignoreUnfoundColumn);
 
@@ -85,10 +87,10 @@ public:
 
 
     //五、读取表格文件
-    void readExcelFile(const QString& filename, int sheetIndex = 0, int columnNameRow = 1, int dataStartRow = 2);
+    void readExcelFile(const QString& filename, int sheetIndex = 0, int columnNameRow = 1, int dataStartRow = 2); //已确认无误
     // readExcelData: 每一行每一列全部读取写入data，默认数据从第二行开始
     void readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow = 2);
-    // readExcelColumnNames: 每一个列名都写入columnNames，同时会更新mapColumnName2Index;
+    // readExcelColumnNames: 每一个列名都写入columnNames，同时会更新mapColumnName2IndexPtr;
     void readExcelColumnNames(QXlsx::Worksheet* worksheet, int columnNameRow = 1);
 
 
@@ -121,6 +123,8 @@ public:
     int get_column_index(enum FieldType field);
     // get_column_indices：如果所有字段都能找到，返回true；如果出现找不到的字段，根据retainUnfoundColumns，若为false则返回false，若为true则在参数中对应位置填写-1
     bool get_column_indices(QVector<enum FieldType>& fields, std::vector<int>& outputColumnIndices, bool retainUnfoundColumns);
+    // get_column_indices：如果所有字段都能找到，返回true；如果出现找不到的字段，根据retainUnfoundColumns，若为false则返回false，若为true则在参数中对应位置填写-1
+    bool get_column_indices(QVector<QString>& columnNames, std::vector<int>& outputColumnIndices, bool retainUnfoundColumns);
 
     // get_row_index: 返回指定列为指定值的行，如果行数超过1，则返回数量的相反数，如果行数等于0，则返回-1
     // 这里做字符串比较时，大小写不敏感，如有需要可在设置里提供自定义大小写敏感判断

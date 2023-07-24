@@ -11,14 +11,12 @@ DataTable::~DataTable()
 
 void DataTable::set_data(QVector<QVector<QString>>& data)
 {
-    this->data = std::make_shared<QVector<QVector<QString>>>(data);
+    this->dataPtr = std::make_shared<QVector<QVector<QString>>>(data);
 }
-
-//void set(std::vector<int>& rowIndices, DataTable& referenceDataTable); //TODO
 
 std::shared_ptr<QVector<QVector<QString>>> DataTable::get_data()
 {
-    return data;
+    return dataPtr;
 }
 
 void DataTable::set_fields(QVector<enum FieldType> &fields)
@@ -56,16 +54,17 @@ std::shared_ptr<std::vector<int>> DataTable::get_unknownFieldColumns()
 
 void DataTable::set_columnNames(QVector<QString> &newColumnNames)
 {
-    mapName2ColumnIndex.clear();
-    this->columnNames = std::make_shared<QVector<QString>>(newColumnNames);
+    //mapName2ColumnIndex.clear();
+    mapColumnName2IndexPtr->clear();
+    this->columnNamesPtr = std::make_shared<QVector<QString>>(newColumnNames);
     for (int i = 0; i < newColumnNames.size(); ++i) {
-        mapName2ColumnIndex.insert(newColumnNames[i], i);
+        mapColumnName2IndexPtr->insert(newColumnNames[i], i);
     }
 }
 
 std::shared_ptr<QVector<QString>> DataTable::get_columnNames()
 {
-    return columnNames;
+    return columnNamesPtr;
 }
 
 QString DataTable::get_columnName(int columnIndex)
@@ -91,12 +90,26 @@ int DataTable::get_column_index(enum FieldType field)
 
 int DataTable::get_column_index(const QString& columnName)
 {
-    auto it = mapName2ColumnIndex.find(columnName);
-    if (it != mapName2ColumnIndex.end()) {
+    auto it = mapColumnName2IndexPtr->find(columnName);
+    if (it != mapColumnName2IndexPtr->end()) {
         return it.value();
     } else {
         return -1;
     }
+}
+
+bool DataTable::get_column_indices(QVector<QString>& columnNames, std::vector<int>& outputColumnIndices)
+{
+    outputColumnIndices.clear();
+    bool allExist = true;
+    for (QString columnName : columnNames) {
+        int index = get_column_index(columnName);
+        if (index < 0) {
+            allExist = false;
+        }
+        outputColumnIndices.push_back(index);
+    }
+    return allExist;
 }
 
 bool DataTable::get_column_indices(QVector<enum FieldType>& fields, std::vector<int>& outputColumnIndices, bool retainUnfoundColumns)
@@ -299,6 +312,31 @@ bool DataTable::update_cell(int rowIndex, const QString& columnName, const QStri
 }
 
 
+void DataTable::readExcelFile(const QString &filename, int sheetIndex, int columnNameRow, int dataStartRow)
+{
+    QXlsx::Document document(filename);
+    if (document.load()) {
+        QStringList sheetNames = document.sheetNames();
+        if (sheetNames.size() <= sheetIndex) {
+            qDebug() << "文件中没有足够的表格，目前只有" << sheetNames.size() << "个sheet.";
+        } else {
+            QString sheetName = sheetNames[sheetIndex];
+            document.selectSheet(sheetName);
+            QXlsx::AbstractSheet* sheet = document.sheet(sheetName);
+            QXlsx::Worksheet* worksheet = (QXlsx::Worksheet*) sheet;
+            worksheet->getFullCells(&maxRow, &maxCol);
+            qDebug() << maxRow << "行，" << maxCol << "列";
+            qDebug() << "开始读取表格数据";
+            readExcelData(worksheet, dataStartRow);
+            qDebug() << "表格数据读取完毕，开始读取分析字段名";
+            readExcelColumnNames(worksheet, columnNameRow);
+            qDebug() << "字段名读取完毕";
+        }
+    } else {
+        qDebug() << "读取文件" << filename << "失败！";
+    }
+}
+
 
 
 
@@ -342,13 +380,59 @@ void DataTable::readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow)
         for (int c = 1; c <= maxCol; ++c) {
             if (worksheet->cellAt(r, c) == nullptr){
                 qDebug() << "读取第" << r << "行、第" << c << "列：空值";
-                (*data)[r-dataStartRow][c-1] = "";
+                (*get_data())[r-dataStartRow][c-1] = "";
             } else {
                 qDebug() << "读取第" << r << "行、第" << c << "列：" << worksheet->cellAt(r, c)->value().toString();
-                (*data)[r-dataStartRow][c-1] = worksheet->cellAt(r, c)->value().toString();
+                (*get_data())[r-dataStartRow][c-1] = worksheet->cellAt(r, c)->value().toString();
             }
         }
     }
+}
+
+void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, int columnNameRow)
+{
+    if (maxCol <= 0) {
+        qWarning("maxCol不是正数！");
+        return;
+    }
+    QVector<QString> newColumnNames;
+    for (int i = 1; i <= maxCol; ++i) {
+        QString newColumnName = worksheet->read(columnNameRow, i).toString();
+        qDebug() << "读取Excel文件第 " << i << " 个列名是：" << newColumnName;
+        int newIndex = get_column_index(newColumnName);
+        if (newIndex < 0) {
+            newIndex = newColumnNames.size();
+            newColumnNames.push_back(newColumnName);
+            mapColumnName2IndexPtr->insert(newColumnName, newIndex);
+        }
+        //TODO
+        if (it != mapColumnName2IndexPtr->end()) {
+            newFields.push_back(it.value());
+            qDebug() << "对应的字段是：" << getFieldTypeStr(it.value());
+        } else {
+            newFields.push_back(FieldType::UNKNOWN);
+            newUnknownFieldColumns.push_back(i-1);
+            qDebug() << "对应的字段是：UNKNOWN";
+        }
+    }
+    set_columnNames(newColumnNames);
+    set_fields(newFields);
+    set_unknownFieldColumns(newUnknownFieldColumns);
+    QString printTemp = "读取的列名清单：";
+    for (QString s : *(this->columnNames)) {
+        printTemp.append(s).append("; ");
+    }
+    qDebug() << printTemp;
+    printTemp = "读取的字段清单：";
+    for (FieldType ft : *(this->fields)) {
+        printTemp.append(getFieldTypeStr(ft)).append("; ");
+    }
+    qDebug() << printTemp;
+    printTemp = "未知字段所在列有：";
+    for (int fc : *(this->unknownFieldColumns)) {
+        printTemp.append(QString(fc)).append("; ");
+    }
+    qDebug() << printTemp;
 }
 
 void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, PtrQMapS2F mapS2F, int columnNameRow)

@@ -188,6 +188,7 @@ bool Config::parse_config_file_v2()
                                 parse_config_string(object3, "target", targetStr);
                                 parse_config_string(object3, "source", sourceStr);
                                 mappingImportTarget2Source.insert(targetStr, sourceStr);
+                                mappingImportSource2Target.insert(sourceStr, targetStr);
                             }
                         } else {
                             qWarning() << "importColumnDefinition的值应当是列表。";

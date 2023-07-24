@@ -63,6 +63,7 @@ private:
     QMapStr2Vec mappingS2ColumnNames;
     QMapStr2Str mappingExportTarget2Source;
     QMapStr2Str mappingImportTarget2Source;
+    QMapStr2Str mappingImportSource2Target;
 
 
     /*
