@@ -105,7 +105,7 @@ private:
     /*
      * 以下成员函数预计后续用不到，待删除
      */
-public:
+private:
     const QVector<QString> &getRecordBookNames() const;
     void setRecordBookNames(const QVector<QString> &newRecordBookNames);
 

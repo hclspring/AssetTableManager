@@ -142,6 +142,19 @@ bool DataTable::get_column_indices(QVector<QString>& columnNames, std::vector<in
 }
 
 // get_row_index: 返回指定列为指定值的行，如果行数超过1，则返回数量的相反数，如果行数等于0，则返回-1
+int DataTable::get_row_index(const QString& columnName, QString& cellValue)
+{
+    std::vector<int> rowIndices = get_row_indices(columnName, cellValue);
+    if (rowIndices.size() > 1) {
+        return -rowIndices.size();
+    } else if (rowIndices.size() == 0) {
+        return -1;
+    } else {
+        return rowIndices[0];
+    }
+}
+
+
 int DataTable::get_row_index(enum FieldType field, QString& fieldValue)
 {
     std::vector<int> rowIndices = get_row_indices(field, fieldValue);
@@ -155,6 +168,23 @@ int DataTable::get_row_index(enum FieldType field, QString& fieldValue)
 }
 
 // get_row_indices: 返回指定列为指定值的所有行序号，如果指定列不存在则返回空vector
+std::vector<int> DataTable::get_row_indices(const QString& columnName, QString& cellValue)
+{
+    std::vector<int> result;
+    int columnIndex = get_column_index(columnName);
+    if (columnIndex < 0) {
+        qWarning("字段不存在");
+        return result;
+    }
+    for (int i = 0; i < dataPtr->size(); ++i) {
+        if ((*get_data())[i][columnIndex].compare(cellValue, Qt::CaseInsensitive) == 0) {
+            result.push_back(i);
+        }
+    }
+    return result;
+}
+
+
 std::vector<int> DataTable::get_row_indices(enum FieldType field, QString& fieldValue)
 {
     std::vector<int> result;
@@ -200,7 +230,7 @@ std::vector<int> DataTable::get_multiple_row_indices(enum FieldType field, QSet<
 
 bool DataTable::check_row_index(int rowIndex)
 {
-    return (rowIndex >= 0 && rowIndex < data->size());
+    return (rowIndex >= 0 && rowIndex < dataPtr->size());
 }
 
 bool DataTable::check_column_index(int columnIndex)
@@ -211,6 +241,17 @@ bool DataTable::check_column_index(int columnIndex)
 bool DataTable::check_row_column_index(int rowIndex, int columnIndex)
 {
     return check_row_index(rowIndex) && check_column_index(columnIndex);
+}
+
+QString DataTable:: get_cell_value(int rowIndex, int columnIndex)
+{
+    bool checked = check_row_column_index(rowIndex, columnIndex);
+    if (checked == false) {
+        qWarning("行号或列好超出限制：rowIndex = %d，columnIndex = %d，返回元素值为空。", rowIndex, columnIndex);
+        return "";
+    } else {
+        return (*get_data())[rowIndex][columnIndex];
+    }
 }
 
 QString DataTable::get_cell_value(int rowIndex, int columnIndex, bool ignoreUnfoundColumn)
@@ -241,6 +282,16 @@ std::shared_ptr<QVector<QString>> DataTable::get_formatted_row(int rowIndex, std
     return std::make_shared<QVector<QString>>(result);
 }
 
+std::shared_ptr<QVector<QString>> DataTable::get_formatted_row(int rowIndex, QVector<QString>& referenceColumnNames)
+{
+    QVector<QString> result;
+    assert(check_row_index(rowIndex));
+    for (QString referenceColumnName : referenceColumnNames) {
+        int columnIndex = get_column_index(referenceColumnName);
+        result.push_back(std::move(get_cell_value(rowIndex, columnIndex)));
+    }
+    return std::make_shared<QVector<QString>>(result);
+}
 
 std::shared_ptr<QVector<QString>> DataTable::get_formatted_row(int rowIndex, QVector<enum FieldType>& referenceFields)
 {
@@ -279,11 +330,11 @@ std::shared_ptr<QVector<QVector<QString>>> DataTable::get_formatted_data(std::ve
 // 对数据进行操作，成功返回true，失败返回false
 bool DataTable::add_row(QVector<QString>& dataRow)
 {
-    if (dataRow.size() != fields->size()) {
-        qDebug("添加的行中字段数量为%d，与要求数量%d不一致！", dataRow.size(), fields->size());
+    if (dataRow.size() != columnNamesPtr->size()) {
+        qDebug("添加的行中字段数量为%d，与要求数量%d不一致！", dataRow.size(), columnNamesPtr->size());
         return false;
     } else {
-        data->push_back(dataRow);
+        get_data()->push_back(dataRow);
         return true;
     }
 }
@@ -291,7 +342,7 @@ bool DataTable::add_row(QVector<QString>& dataRow)
 bool DataTable::update_cell(int rowIndex, int columnIndex, const QString& value)
 {
     if (check_row_column_index(rowIndex, columnIndex)) {
-        (*data)[rowIndex][columnIndex] = value;
+        (*get_data())[rowIndex][columnIndex] = value;
         return true;
     } else {
         qWarning("rowIndex或columnIndex不符合要求（在0~N-1之间），无法更新。");
@@ -400,40 +451,21 @@ void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, int columnName
         QString newColumnName = worksheet->read(columnNameRow, i).toString();
         qDebug() << "读取Excel文件第 " << i << " 个列名是：" << newColumnName;
         int newIndex = get_column_index(newColumnName);
-        if (newIndex < 0) {
-            newIndex = newColumnNames.size();
-            newColumnNames.push_back(newColumnName);
-            mapColumnName2IndexPtr->insert(newColumnName, newIndex);
+        if (newIndex >= 0) {
+            newColumnName.append("（重复列名）");
+            qWarning() << "发现重复列名，已更名为“" << newColumnName << "”";
         }
-        //TODO
-        if (it != mapColumnName2IndexPtr->end()) {
-            newFields.push_back(it.value());
-            qDebug() << "对应的字段是：" << getFieldTypeStr(it.value());
-        } else {
-            newFields.push_back(FieldType::UNKNOWN);
-            newUnknownFieldColumns.push_back(i-1);
-            qDebug() << "对应的字段是：UNKNOWN";
-        }
+        newColumnNames.push_back(newColumnName);
     }
     set_columnNames(newColumnNames);
-    set_fields(newFields);
-    set_unknownFieldColumns(newUnknownFieldColumns);
+    //以下均为打印日志需要，与函数主要功能无关
     QString printTemp = "读取的列名清单：";
-    for (QString s : *(this->columnNames)) {
+    for (QString s : *(this->columnNamesPtr)) {
         printTemp.append(s).append("; ");
     }
     qDebug() << printTemp;
-    printTemp = "读取的字段清单：";
-    for (FieldType ft : *(this->fields)) {
-        printTemp.append(getFieldTypeStr(ft)).append("; ");
-    }
-    qDebug() << printTemp;
-    printTemp = "未知字段所在列有：";
-    for (int fc : *(this->unknownFieldColumns)) {
-        printTemp.append(QString(fc)).append("; ");
-    }
-    qDebug() << printTemp;
 }
+
 
 void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, PtrQMapS2F mapS2F, int columnNameRow)
 {
@@ -477,6 +509,56 @@ void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, PtrQMapS2F map
     }
     qDebug() << printTemp;
 }
+
+
+void DataTable::updateWith(DataTable* newTable, const QString& primaryKeyColumnName)
+{
+    //更新主表的字段
+    for (QString newColumnName : *(newTable->get_columnNames())) {
+        if (get_column_index(newColumnName) < 0) {
+            qDebug() << "主表不存在字段" << newColumnName << ", 在主表中添加这一列";
+            addColumn(newColumnName);
+        }
+    }
+    //获取新增表的主键序号
+    int primaryKeyColumnIndexOfNewTable = newTable->get_column_index(primaryKeyColumnName);
+    qDebug() << "更新表的主键序号是" << primaryKeyColumnIndexOfNewTable;
+    //对每一行数据做同样的操作
+    for (int rowIndexOfNewTable = 0; rowIndexOfNewTable < newTable->get_data()->size(); ++rowIndexOfNewTable) {
+        //获取主键值
+        QString primaryKeyValue = newTable->get_data()->at(rowIndexOfNewTable).at(primaryKeyColumnIndexOfNewTable);
+        qDebug() << "更新表第" << rowIndexOfNewTable << "行的主键值为" << primaryKeyValue;
+        //获取主表中的行序号
+        int rowIndexOfMainTable = this->get_row_index(primaryKeyColumnName, primaryKeyValue);
+        qDebug() << "该主键值在主表中的行号是" << rowIndexOfMainTable;
+        //如果主表中存在对应的行，则做更新
+        if (rowIndexOfMainTable >= 0) {
+            //对新增表该行数据的每一列做同样的操作
+            for (int columnIndexOfNewTable = 0; columnIndexOfNewTable < newTable->get_data()->at(rowIndexOfNewTable).size(); ++columnIndexOfNewTable) {
+                //获取每一列的字段
+                QString columnName = newTable->get_columnName(columnIndexOfNewTable);
+                qDebug() << "对字段名为 " << columnName << "的列开始处理";
+                //对主表对应的字段进行更新
+                this->update_cell(rowIndexOfMainTable, columnName, newTable->get_cell_value(rowIndexOfNewTable, columnIndexOfNewTable));
+            }
+        } //否则（主表中不存在对应的行），则新增一行数据
+        else if (rowIndexOfMainTable == -1){
+            // 将新增表的行按照主表的字段进行格式化
+            std::shared_ptr<QVector<QString>> formattedRow = newTable->get_formatted_row(rowIndexOfNewTable, *(this->get_columnNames()));
+            QString printTemp = "主表不存在该主键值，因此新增一行，将更新表中数据行格式化为主表格式：";
+            for (QString s : *formattedRow) {
+                printTemp.append(s).append("; ");
+            }
+            qDebug() << printTemp;
+            // 在主表中新增行
+            this->add_row(*formattedRow);
+        } else {
+            qWarning() << "台账中字段" << primaryKeyColumnName << "值为" << primaryKeyValue << "的行数超过1，等于" << QString(-rowIndexOfMainTable) << ", 未做更新。";
+        }
+    }
+}
+
+
 
 void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField, PtrQMapS2F mapS2F)
 {
@@ -538,6 +620,21 @@ void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField, 
 }
 
 
+
+void DataTable::addColumn(const QString& columnName)
+{
+    if (get_column_index(columnName) >= 0) {
+        qCritical("已存在名为%s的列！", columnName.toStdString().c_str());
+        return;
+    }
+    ++maxCol;
+    for (int i = 0; i < get_data()->size(); ++i) {
+        (*get_data())[i].push_back("");
+    }
+    columnNamesPtr->push_back(columnName);
+    int columnIndex = maxCol - 1;
+    mapColumnName2IndexPtr->insert(columnName, columnIndex);
+}
 
 void DataTable::addColumn(const QString& columnName, PtrQMapS2F mapS2F)
 {
@@ -612,7 +709,7 @@ void DataTable::writeExcelFile(const QString& filename)
     setContentFormat(contentFormat);
     for (int i = 0; i < get_data()->size(); ++i) {
         for (int j = 0; j < maxCol; ++j) {
-            xlsx.write(i+2, j+1, get_cell_value(i, j, true), contentFormat);
+            xlsx.write(i+2, j+1, get_cell_value(i, j), contentFormat);
         }
     }
     bool saveResult = xlsx.saveAs(filename);

@@ -67,37 +67,48 @@ public:
     int get_column_index(const QString& columnName);
     // get_column_indices：如果所有字段都能找到，返回true；如果出现找不到的字段，则在参数中对应位置填写-1，返回false
     bool get_column_indices(QVector<QString>& columnNames, std::vector<int>& outputColumnIndices);
+    // get_row_index: 返回指定列为指定值的行，如果行数超过1，则返回数量的相反数，如果行数等于0，则返回-1
+    // 这里做字符串比较时，大小写不敏感，如有需要可在设置里提供自定义大小写敏感判断
+    int get_row_index(const QString& columnName, QString& cellValue);
+    // get_row_indices: 返回指定列为指定值的所有行序号，如果指定列不存在则返回空vector
+    std::vector<int> get_row_indices(const QString& columnName, QString& cellValue);
 
 
+    //第三部分已确认无误
     //三、获取数据：如果ignoreUnfoundColumn为true，则没有对应字段时返回""，否则报错退出
-    bool check_row_index(int rowIndex);
+    bool check_row_index(int rowIndex);//已确认无误
     bool check_column_index(int columnIndex); //已确认无误
-    bool check_row_column_index(int rowIndex, int columnIndex);
-    QString get_cell_value(int rowIndex, int columnIndex, bool ignoreUnfoundColumn);
+    bool check_row_column_index(int rowIndex, int columnIndex); //已确认无误
+    QString get_cell_value(int rowIndex, int columnIndex); //已确认无误
 
-    //四、格式化数据：如果columnIndex或referenceField不合法，则对应字段填写空字符串（即""）
-    std::shared_ptr<QVector<QString>> get_formatted_row(int rowIndex, std::vector<int>& referenceColumnIndices);
-    std::shared_ptr<QVector<QVector<QString>>> get_formatted_row(std::vector<int>& rowIndices, std::vector<int>& referenceColumnIndices);
+    //第四部分已确认无误
+    //四、格式化数据：
+    std::shared_ptr<QVector<QString>> get_formatted_row(int rowIndex, QVector<QString>& referenceColumnNames);
 
+    //第四部分已确认无误
     //四、更新数据
     // 对数据进行操作，成功返回true，失败返回false
     bool add_row(QVector<QString>& dataRow);
-    bool update_cell(int rowIndex, int columnIndex, const QString& value);
-    bool update_cell(int rowIndex, const QString& columnName, const QString& value);
+    bool update_cell(int rowIndex, int columnIndex, const QString& value); //已确认无误
+    bool update_cell(int rowIndex, const QString& columnName, const QString& value); //已确认无误
 
 
+    //第五部分已确认无误
     //五、读取表格文件
     void readExcelFile(const QString& filename, int sheetIndex = 0, int columnNameRow = 1, int dataStartRow = 2); //已确认无误
     // readExcelData: 每一行每一列全部读取写入data，默认数据从第二行开始
-    void readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow = 2);
+    void readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow = 2); //已确认无误
     // readExcelColumnNames: 每一个列名都写入columnNames，同时会更新mapColumnName2IndexPtr;
-    void readExcelColumnNames(QXlsx::Worksheet* worksheet, int columnNameRow = 1);
+    void readExcelColumnNames(QXlsx::Worksheet* worksheet, int columnNameRow = 1); //已确认无误
 
 
+    //第六部分已全部确认无误
     //六、合并更新台账
-    void updateWith(DataTable* newDataTable);
+    void updateWith(DataTable* newDataTable, const QString& primaryKeyColumnName);
 
+    //第七部分已确认无误
     //七、添加字段
+    void addColumn(const QString& columnName);
 
 
     //七、写入表格文件
@@ -108,7 +119,7 @@ public:
     void setContentFormat(QXlsx::Format& format);
 
 
-
+private:
     /*
      * 以下几个成员后续预计用不到，准备去除
      */
@@ -141,10 +152,12 @@ public:
 
     //三、获取数据：如果ignoreUnfoundColumn为true，则没有对应字段时返回""，否则报错退出
     QString get_cell_value(int rowIndex, enum FieldType field, bool ignoreUnfoundColumn);
+    QString get_cell_value(int rowIndex, int columnIndex, bool ignoreUnfoundColumn);
 
     //四、格式化数据：如果columnIndex或referenceField不合法，则对应字段填写空字符串（即""）
     std::shared_ptr<QVector<QString>> get_formatted_row(int rowIndex, QVector<enum FieldType>& referenceFields);
     std::shared_ptr<QVector<QVector<QString>>> get_formatted_data(std::vector<int>& rowIndices, QVector<enum FieldType>& referenceFields);
+    std::shared_ptr<QVector<QVector<QString>>> get_formatted_row(std::vector<int>& rowIndices, std::vector<int>& referenceColumnIndices);
 
     //四、更新数据
     // 对数据进行操作，成功返回true，失败返回false
