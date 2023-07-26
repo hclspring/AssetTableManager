@@ -16,6 +16,7 @@
 
 #include "constant.h"
 
+class Config;
 
 class DataTable
 {
@@ -36,7 +37,7 @@ private:
 
     /*
      * 以下几个成员后续预计用不到，准备去除
-     */
+     *
     // data指表格台账数据，第一维为数据行，第二维为字段列
     std::shared_ptr<QVector<QVector<QString>>> data;
     std::shared_ptr<QVector<QString>> columnNames;
@@ -49,6 +50,7 @@ private:
     // unknownFieldColumn存放FieldType==UNKNOWN的列
     std::shared_ptr<std::vector<int>> unknownFieldColumns;
     // columnNames存放所有的列名（包括未能识别出含义的列名）
+	*/
 
 public:
     //第一部分全部已确认无误
@@ -95,11 +97,11 @@ public:
 
     //第五部分已确认无误
     //五、读取表格文件
-    void readExcelFile(const QString& filename, int sheetIndex = 0, int columnNameRow = 1, int dataStartRow = 2); //已确认无误
+    void readExcelFile(const QString& filename, std::shared_ptr<QMapStr2Str> importColumnNameMap, int sheetIndex = 0, int columnNameRow = 1, int dataStartRow = 2); //已确认无误
     // readExcelData: 每一行每一列全部读取写入data，默认数据从第二行开始
     void readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow = 2); //已确认无误
     // readExcelColumnNames: 每一个列名都写入columnNames，同时会更新mapColumnName2IndexPtr;
-    void readExcelColumnNames(QXlsx::Worksheet* worksheet, int columnNameRow = 1); //已确认无误
+    void readExcelColumnNames(QXlsx::Worksheet* worksheet, std::shared_ptr<QMapStr2Str> importColumnNameMap, int columnNameRow = 1); //已确认无误
 
 
     //第六部分已全部确认无误
@@ -112,7 +114,7 @@ public:
 
 
     //七、写入表格文件
-    void writeExcelFile(const QString& filename);
+    void writeExcelFile(const QString& filename, const std::shared_ptr<QVector<QString>>& exportColumnNames, std::shared_ptr<QMapStr2Str> mappingExport);
 
     //八、设置表格格式
     void setTitleFormat(QXlsx::Format& format);
@@ -122,7 +124,7 @@ public:
 private:
     /*
      * 以下几个成员后续预计用不到，准备去除
-     */
+     *
     void set_fields(QVector<enum FieldType>& fields);
     std::shared_ptr<QVector<enum FieldType>> get_fields();
     FieldType get_field(int columnIndex);//若不合法，则返回FieldType::COUNT
@@ -181,7 +183,7 @@ private:
     void writeExcelFile(const QString& filename, const std::vector<enum FieldType>& fieldTypes, PtrQMapF2S mapF2S);
 
     //八、设置表格格式
-
+*/
 
 };
 

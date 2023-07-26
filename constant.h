@@ -19,7 +19,7 @@ typedef QMap<QString, QString> QMapStr2Str;
 
 /*
  * 以下类型定义和全局变量、静态函数预计后续用不到，待删除
- */
+
 enum class FieldType {
     XULIEHAO = 0,         //序列号（设备出厂编号）
     KAPIANBIANHAO,    //卡片编号
@@ -221,6 +221,6 @@ static QString getFieldTypeStr(const enum FieldType& fieldType) {
     int index = static_cast<int>(fieldType);
     return QString(FIELDTYPESTR[index]);
 }
-
+*/
 
 #endif // CONSTANT_H

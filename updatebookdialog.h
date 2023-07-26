@@ -35,7 +35,7 @@ private slots:
     void on_browseButton_clicked();
     void on_confirmButton_clicked();
     void on_cancelButton_clicked();
-    void on_mappingComboBox_currentTextChanged();
+    //void on_mappingComboBox_currentTextChanged();
 };
 
 #endif // UPDATEBOOKDIALOG_H

@@ -10,7 +10,7 @@ ExportBookDialog::ExportBookDialog(Config* config, QWidget *parent)
       ui(new Ui::ExportBookDialog)
 {
     ui->setupUi(this);
-    QVector<QString> mappingNames = config->getRecordBookNames();
+    QVector<QString> mappingNames = config->getExportBookTypes();
     for (QString mappingName : mappingNames) {
         ui->exportStyleComboBox->addItem(mappingName);
     }

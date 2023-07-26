@@ -10,7 +10,7 @@ UpdateBookDialog::UpdateBookDialog(Config* config, QWidget *parent) :
     ui->setupUi(this);
     this->config = config;
     qDebug() << "测试点2";
-    QVector<QString> bookNames = config->getRecordBookNames();
+    QVector<QString> bookNames = config->getExportBookTypes();
     qDebug() << "测试点1";
     for (QString mappingName : bookNames) {
         qDebug() << "新增映射：" << mappingName;
@@ -61,6 +61,7 @@ void UpdateBookDialog::on_cancelButton_clicked() {
     delete ui;
 }
 
+/*
 void UpdateBookDialog::on_mappingComboBox_currentTextChanged() {
     qDebug() << "进入UpdateBookDialog::on_mappingComboBox_currentTextChanged()";
     QString curMapping = ui->mappingComboBox->currentText();
@@ -79,3 +80,4 @@ void UpdateBookDialog::on_mappingComboBox_currentTextChanged() {
         ui->primaryKeyComboBox->setCurrentIndex(-1);
     }
 }
+*/

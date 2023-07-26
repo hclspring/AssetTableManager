@@ -11,7 +11,7 @@ ImportBookDialog::ImportBookDialog(Config* config, QWidget *parent)
 {
     ui->setupUi(this);
     qDebug() << "开始构建importBookDialog";
-    QVector<QString> bookNames = config->getRecordBookNames();
+    QVector<QString> bookNames = config->getExportBookTypes();
     qDebug() << "从配置中获取bookNames，共有" << bookNames.size() << "个bookName.";
     for (QString mappingName : bookNames) {
         ui->importStyleComboBox->addItem(mappingName);

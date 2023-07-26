@@ -2,15 +2,15 @@
 
 Config::Config()
 {
-    constructMapFieldType();
-    parse_config_file();
+    //constructMapFieldType();
+    parse_config_file_v2();
 }
 
 Config::Config(QString& newConfigFilePathName)
 {
-    constructMapFieldType();
+    //constructMapFieldType();
     setConfigFilePathName(newConfigFilePathName);
-    parse_config_file();
+    parse_config_file_v2();
 }
 
 const QString &Config::getConfigFilePathName() const
@@ -33,6 +33,27 @@ void Config::setRecordBookRootPath(const QString &newRecordBookRootPath)
     recordBookRootPath = QDir::toNativeSeparators(newRecordBookRootPath) + QDir::separator();
 }
 
+QVector<QString> Config::getExportBookTypes()
+{
+    return  exportBookTypes;
+}
+
+QVector<QString> Config::getPrimaryKeyColumnNames()
+{
+    return primaryKeyColumnNames;
+}
+
+std::shared_ptr<QMapStr2Str> Config::getMappingImportSource2Target()
+{
+    return std::make_shared<QMapStr2Str>(mappingImportSource2Target);
+}
+
+std::shared_ptr<QMapStr2Str> Config::getMappingExportTarget2Source()
+{
+    return std::make_shared<QMapStr2Str>(mappingExportTarget2Source);
+}
+
+/*
 const QVector<QString> &Config::getRecordBookNames() const
 {
     return recordBookNames;
@@ -42,7 +63,7 @@ void Config::setRecordBookNames(const QVector<QString> &newRecordBookNames)
 {
     recordBookNames = newRecordBookNames;
 }
-
+*/
 /*
 const QString &Config::getFieldMappingRootPath() const
 {
@@ -119,7 +140,7 @@ bool Config::parse_config_file_v2()
                 this->mappingS2SheetIndex.clear();
                 this->mappingS2ColumnNameRow.clear();
                 this->mappingS2DataStartRow.clear();
-                this->mappingS2ColumnNames.clear();
+                this->mappingExportBookType2ColumnNames.clear();
 
                 for (int i = 0; i < arraySize; ++i) {
                     QJsonObject object2 = array[i].toObject();
@@ -128,7 +149,7 @@ bool Config::parse_config_file_v2()
                         QString newBookType;
                         parse_config_string(object2, "exportBookType", newBookType);
                         if (newBookType.length() > 0) {
-                            recordBookNames.push_back(newBookType);
+                            exportBookTypes.push_back(newBookType);
                         }
                         parse_config_index(object2, mappingS2SheetIndex, "sheetIndex", newBookType);
                         parse_config_index(object2, mappingS2ColumnNameRow, "columnNameRow", newBookType);
@@ -143,7 +164,7 @@ bool Config::parse_config_file_v2()
                                     QString columnName = array2[j].toString();
                                     columnNames.push_back(columnName);
                                 }
-                                mappingS2ColumnNames.insert(newBookType, std::make_shared<QVecString>(columnNames));
+                                mappingExportBookType2ColumnNames.insert(newBookType, std::make_shared<QVecString>(columnNames));
                             }
                         }
                     } //如果该项目用于提供输出表格字段
@@ -198,11 +219,25 @@ bool Config::parse_config_file_v2()
                     }
                 } // for循环
             }
+        } else if (object.contains("primaryKeyColumns")) {
+            QJsonValue value1 = object.value("primaryKeyColumns");
+            if (value1.type() != QJsonValue::Array) {
+                qWarning("importSettings的值应当是列表。");
+            } else {
+                QJsonArray array = value1.toArray();
+                int arraySize = array.size();
+                primaryKeyColumnNames.clear();
+                for (int i = 0; i < arraySize; ++i) {
+                    QString x = array[i].toString();
+                    primaryKeyColumnNames.push_back(x);
+                }
+            }
         }
     }
 
 }
 
+/*
 bool Config::parse_config_file()
 {
     if (getConfigFilePathName().isEmpty()) {
@@ -324,14 +359,14 @@ QString Config::get_bookName(const QString& bookFilePathName)
     assert(strList.size() >= 2);
     return strList[strList.size() - 2];
 }
-
+*/
 /*
 bool Config::read_mapping_names()
 {
     return read_subdirs(getFieldMappingRootPath(), fieldMappingNames, QDir::Files);
 }
 */
-
+/*
 QVector<QString> Config::get_field_names(QString& bookName)
 {
     QVector<QString> result;
@@ -411,9 +446,7 @@ PtrQMapF2S Config::get_ptr_mapF2S(QString& bookName)
         //return std::make_shared<QMapField2String>(NULL);
     }
 }
-
-
-PtrQMapF2S get_ptr_mapF2S(QString& bookName);//TODO
+*/
 
 bool Config::read_subdirs(const QString& rootPathStr, QVector<QString>& result, enum QDir::Filter filter)
 {
@@ -451,6 +484,34 @@ int Config::get_dataStartRow(QString& bookName)
     return get_map_value_index(mappingS2DataStartRow, bookName);
 }
 
+
+bool Config::readImportColumnNameNeedConvert(QString& columnName)
+{
+    QMapStr2Str::iterator it = mappingImportSource2Target.find(columnName);
+    if (it == mappingImportSource2Target.end()) {
+        return false;
+    } else {
+        return  true;
+    }
+}
+
+QString Config::getConvertedImportColumnName(QString& columnName)
+{
+    QMapStr2Str::iterator it = mappingImportSource2Target.find(columnName);
+    assert(it != mappingImportSource2Target.end());
+    return it.value();
+}
+
+std::shared_ptr<QVector<QString>> Config::getExportColumnNames(QString& exportBookType)
+{
+    QMapStr2Vec::iterator it = mappingExportBookType2ColumnNames.find(exportBookType);
+    if (it != mappingExportBookType2ColumnNames.end()) {
+        return it.value();
+    } else {
+        qWarning() << "未识别到合法的输出台账类型，要求的类型为" << exportBookType;
+        return nullptr;
+    }
+}
 
 int Config::get_map_value_index(QMapString2Int& map, QString& key)
 {

@@ -42,6 +42,7 @@ void MainWindow::on_importBookButton_clicked()
         dataTable = new DataTable;
         qDebug() << "开始读取台账文件……";
         dataTable->readExcelFile(ui->bookFilePathNameTextBrowser->toPlainText(),
+                                 config->getMappingImportSource2Target(),
                              config->get_sheetIndex(inputStyle),
                              config->get_columnNameRow(inputStyle),
                              config->get_dataStartRow(inputStyle));
@@ -70,6 +71,7 @@ void MainWindow::on_updateBookButton_clicked()
         DataTable * updateTable = new DataTable;
         qDebug() << "开始读取更新文件……";
         updateTable->readExcelFile(ui->updateFilePathNameTextBrowser->toPlainText(),
+                                   config->getMappingImportSource2Target(),
                              config->get_sheetIndex(bookName),
                              config->get_columnNameRow(bookName),
                              config->get_dataStartRow(bookName));
@@ -92,8 +94,11 @@ void MainWindow::on_exportBookButton_clicked()
         QString filePath = dialog->get_filePath();
         QString outputStyle = dialog->get_outputStyle();
         qDebug() << "输出格式：" << outputStyle;
-        dataTable->writeExcelFile(filePath);
-        append_updateProcessTextBrowser("已导出台账文件：" + filePath);
+        QVector<QString> exportColumnNames;
+        if (config->getExportColumnNames(outputStyle) !=  nullptr) {
+            dataTable->writeExcelFile(filePath, config->getExportColumnNames(outputStyle), config->getMappingExportTarget2Source());
+            append_updateProcessTextBrowser("已导出台账文件：" + filePath);
+        }
     }
     delete dialog;
 }
