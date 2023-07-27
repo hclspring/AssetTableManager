@@ -45,8 +45,8 @@ private slots:
     void on_cancelButton_clicked();
     void on_primaryKeyComboBox_currentTextChanged();
     void on_sheetNameComboBox_currentTextChanged();
-    void on_dataStartRowLineEdit_currentTextChanged();
-    void on_columnNameRowLineEdit_currentTextChanged();
+    void on_columnNameRowLineEdit_textChanged(const QString &arg1);
+    void on_dataStartRowLineEdit_textChanged(const QString &arg1);
 
 private:
     bool check_allInput_legal();
@@ -59,7 +59,6 @@ private:
 
 private slots:
     void test();
-
 
 };
 

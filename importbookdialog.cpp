@@ -19,6 +19,8 @@ ImportBookDialog::ImportBookDialog(Config* config, bool needPrimaryKey, QWidget 
     if (needPrimaryKey) {
         ui->primaryKeyComboBox->setCurrentIndex(-1);
     }
+    ui->columnNameRowLineEdit->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
+    ui->dataStartRowLineEdit->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
     /*
     qDebug() << "开始构建importBookDialog";
     QVector<QString> bookNames = config->getExportBookTypes();
@@ -110,13 +112,16 @@ void ImportBookDialog::on_sheetNameComboBox_currentTextChanged() {
     set_confirmButton();
 }
 
-void ImportBookDialog::on_dataStartRowLineEdit_currentTextChanged() {
+void ImportBookDialog::on_columnNameRowLineEdit_textChanged(const QString &arg1)
+{
     set_confirmButton();
 }
 
-void ImportBookDialog::on_columnNameRowLineEdit_currentTextChanged() {
+void ImportBookDialog::on_dataStartRowLineEdit_textChanged(const QString &arg1)
+{
     set_confirmButton();
 }
+
 
 bool ImportBookDialog::check_allInput_legal() {
     return check_sheetName_legal() && check_dataStartRow_legal() && check_primaryKey_legal() && check_sheetName_legal();
@@ -131,15 +136,27 @@ bool ImportBookDialog::check_primaryKey_legal() {
 }
 
 bool ImportBookDialog::check_dataStartRow_legal() {
-    int x1 = ui->dataStartRowLineEdit->text().toInt();
-    int x2 = ui->columnNameRowLineEdit->text().toInt();
-    return x1 >= 1 && x1 > x2;
+    QString s1 = ui->dataStartRowLineEdit->text();
+    QString s2 = ui->columnNameRowLineEdit->text();
+    if (s1.length() > 0 && s2.length() > 0) {
+        int x1 = ui->dataStartRowLineEdit->text().toInt();
+        int x2 = ui->columnNameRowLineEdit->text().toInt();
+        return x1 >= 1 && x1 > x2;
+    } else {
+        return false;
+    }
 }
 
 bool ImportBookDialog::check_columnNameRow_legal() {
-    int x1 = ui->dataStartRowLineEdit->text().toInt();
-    int x2 = ui->columnNameRowLineEdit->text().toInt();
-    return x2 >= 1 && x1 > x2;
+    QString s1 = ui->dataStartRowLineEdit->text();
+    QString s2 = ui->columnNameRowLineEdit->text();
+    if (s1.length() > 0 && s2.length() > 0) {
+        int x1 = ui->dataStartRowLineEdit->text().toInt();
+        int x2 = ui->columnNameRowLineEdit->text().toInt();
+        return x2 >= 1 && x1 > x2;
+    } else {
+        return false;
+    }
 }
 
 
@@ -161,3 +178,6 @@ QVector<QString> ImportBookDialog::read_book_names(const QString& bookRootPath)
     ;
 }
 */
+
+
+
