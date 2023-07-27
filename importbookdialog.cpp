@@ -5,49 +5,150 @@
 #include "config.h"
 #include "datatable.h"
 
-ImportBookDialog::ImportBookDialog(Config* config, QWidget *parent)
+ImportBookDialog::ImportBookDialog(Config* config, bool needPrimaryKey, QWidget *parent)
     : QDialog(parent),
       ui(new Ui::ImportBookDialog)
 {
     ui->setupUi(this);
+    ui->primaryKeyLabel->setVisible(needPrimaryKey);
+    ui->primaryKeyComboBox->setVisible(needPrimaryKey);
+
+    for (QString key : config->getPrimaryKeyColumnNames()) {
+        ui->primaryKeyComboBox->addItem(key);
+    }
+    if (needPrimaryKey) {
+        ui->primaryKeyComboBox->setCurrentIndex(-1);
+    }
+    /*
     qDebug() << "开始构建importBookDialog";
     QVector<QString> bookNames = config->getExportBookTypes();
-    qDebug() << "从配置中获取bookNames，共有" << bookNames.size() << "个bookName.";
+    qDebug() << "从配置中获取bookType，共有" << bookNames.size() << "个bookType.";
     for (QString mappingName : bookNames) {
         ui->importStyleComboBox->addItem(mappingName);
     }
     ui->importStyleComboBox->setCurrentIndex(-1);
     qDebug() << "结束构建importBookDialog";
+    */
 }
 
 ImportBookDialog::~ImportBookDialog() {
     delete ui;
 }
 
-QString ImportBookDialog::get_filePath() {
+const QString &ImportBookDialog::getSheetName() const
+{
+    return sheetName;
+}
+
+const QString &ImportBookDialog::getPrimaryKey() const
+{
+    return primaryKey;
+}
+
+int ImportBookDialog::getDataStartRow() const
+{
+    return dataStartRow;
+}
+
+int ImportBookDialog::getColumnNameRow() const
+{
+    return columnNameRow;
+}
+
+const QString &ImportBookDialog::getFilePath() const {
     return filePath;
 }
 
+/*
 QString ImportBookDialog::get_inputStyle() {
     return inputStyle;
 }
+*/
 
 void ImportBookDialog::on_browseButton_clicked() {
     ui->filePathEdit->setText(QFileDialog::getOpenFileName(this, "选择打开文件", "./"));
+
+    QXlsx::Document document(ui->filePathEdit->toPlainText());
+    if (document.load()) {
+        QStringList sheetNames = document.sheetNames();
+        for (QString sheetName : sheetNames) {
+            ui->sheetNameComboBox->addItem(sheetName);
+        }
+        ui->sheetNameComboBox->setCurrentIndex(0);
+    } else {
+        qCritical() << "无法按照Excel表格读取文件" << ui->filePathEdit->toPlainText();
+    }
 }
 
 void ImportBookDialog::on_confirmButton_clicked() {
     filePath = ui->filePathEdit->toPlainText();
-    inputStyle = ui->importStyleComboBox->currentText();
+    sheetName = ui->sheetNameComboBox->currentText();
+    primaryKey = ui->primaryKeyComboBox->currentText();
+    dataStartRow = ui->dataStartRowLineEdit->text().toInt();
+    columnNameRow = ui->columnNameRowLineEdit->text().toInt();
+    //inputStyle = ui->importStyleComboBox->currentText();
     this->close();
     delete ui;
 }
 
 void ImportBookDialog::on_cancelButton_clicked() {
     filePath = "";
-    inputStyle = "";
+    sheetName = "";
+    primaryKey = "";
+    dataStartRow = -1;
+    columnNameRow = -1;
+    //inputStyle = "";
     this->close();
     delete ui;
+}
+
+void ImportBookDialog::on_primaryKeyComboBox_currentTextChanged() {
+    set_confirmButton();
+}
+
+void ImportBookDialog::on_sheetNameComboBox_currentTextChanged() {
+    set_confirmButton();
+}
+
+void ImportBookDialog::on_dataStartRowLineEdit_currentTextChanged() {
+    set_confirmButton();
+}
+
+void ImportBookDialog::on_columnNameRowLineEdit_currentTextChanged() {
+    set_confirmButton();
+}
+
+bool ImportBookDialog::check_allInput_legal() {
+    return check_sheetName_legal() && check_dataStartRow_legal() && check_primaryKey_legal() && check_sheetName_legal();
+}
+
+bool ImportBookDialog::check_sheetName_legal() {
+    return (ui->sheetNameComboBox->currentIndex() >= 0);
+}
+
+bool ImportBookDialog::check_primaryKey_legal() {
+    return (ui->primaryKeyComboBox->isVisible() == false || ui->primaryKeyComboBox->currentIndex() >= 0);
+}
+
+bool ImportBookDialog::check_dataStartRow_legal() {
+    int x1 = ui->dataStartRowLineEdit->text().toInt();
+    int x2 = ui->columnNameRowLineEdit->text().toInt();
+    return x1 >= 1 && x1 > x2;
+}
+
+bool ImportBookDialog::check_columnNameRow_legal() {
+    int x1 = ui->dataStartRowLineEdit->text().toInt();
+    int x2 = ui->columnNameRowLineEdit->text().toInt();
+    return x2 >= 1 && x1 > x2;
+}
+
+
+void ImportBookDialog::set_confirmButton() {
+    if (check_allInput_legal()) {
+        ui->confirmButton->setDisabled(false);
+    } else {
+        ui->confirmButton->setDisabled(true);
+    }
 }
 
 void ImportBookDialog::test() {

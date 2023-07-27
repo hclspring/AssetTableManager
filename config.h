@@ -53,7 +53,7 @@ public:
     Config(QString& newConfigFilePathName);
 
 private:
-    QString configFilePathName = "./config.txt";
+    QString configFilePathName = "./config.v2.txt";
     QString recordBookRootPath;
     QVector<QString> exportBookTypes;
     QVector<QString> primaryKeyColumnNames;
@@ -111,6 +111,7 @@ private:
     // 读取配置json文件里的索引型数据，并插入到map里
     void parse_config_index(QJsonObject& object, QMapString2Int& map, const QString& key, QString& bookType);
     void parse_config_string(QJsonObject& object, const QString& key, QString& value);
+    void parse_config_vecstr(QJsonObject& object, const QString& key, QVector<QString>& value);
 
 
 

@@ -23,12 +23,12 @@ private:
     Ui::UpdateBookDialog *ui;
     Config *config;
     QString filePath;
-    QString mappingName;
+    //QString mappingName;
     QString primaryKeyStr;
 
 public:
     QString get_filePath();
-    QString get_mappingName();
+    //QString get_mappingName();
     QString get_primaryKeyStr();
 
 private slots:
@@ -36,6 +36,7 @@ private slots:
     void on_confirmButton_clicked();
     void on_cancelButton_clicked();
     //void on_mappingComboBox_currentTextChanged();
+    void on_primaryKeyComboBox_currentTextChanged();
 };
 
 #endif // UPDATEBOOKDIALOG_H

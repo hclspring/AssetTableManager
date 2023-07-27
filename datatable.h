@@ -98,6 +98,7 @@ public:
     //第五部分已确认无误
     //五、读取表格文件
     void readExcelFile(const QString& filename, std::shared_ptr<QMapStr2Str> importColumnNameMap, int sheetIndex = 0, int columnNameRow = 1, int dataStartRow = 2); //已确认无误
+    void readExcelFile(const QString& filename, std::shared_ptr<QMapStr2Str> importColumnNameMap, const QString& sheetName, int columnNameRow = 1, int dataStartRow = 2); //已确认无误
     // readExcelData: 每一行每一列全部读取写入data，默认数据从第二行开始
     void readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow = 2); //已确认无误
     // readExcelColumnNames: 每一个列名都写入columnNames，同时会更新mapColumnName2IndexPtr;
@@ -110,11 +111,14 @@ public:
 
     //第七部分已确认无误
     //七、添加字段
-    void addColumn(const QString& columnName);
+    // addColumnName: 初始化dataTable时添加列名，不动maxCol和dataPtr
+    void addColumnName(const QString& columnName);
+    // addNewEmptyColumn: 新加空字段时给dataTable添加列，需要同步修改maxCol和dataPtr
+    void addNewEmptyColumn(const QString& columnName);
 
 
     //七、写入表格文件
-    void writeExcelFile(const QString& filename, const std::shared_ptr<QVector<QString>>& exportColumnNames, std::shared_ptr<QMapStr2Str> mappingExport);
+    void writeExcelFile(const QString& filename, const std::shared_ptr<QVector<QString>>& exportColumnNamesPtr, std::shared_ptr<QMapStr2Str> mappingExport);
 
     //八、设置表格格式
     void setTitleFormat(QXlsx::Format& format);

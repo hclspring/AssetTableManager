@@ -3,6 +3,9 @@
 
 DataTable::DataTable()
 {
+    this->dataPtr = std::make_shared<QVector<QVecString>>();
+    this->columnNamesPtr = std::make_shared<QVecString>();
+    this->mapColumnName2IndexPtr = std::make_shared<QMapString2Int>();
 }
 
 DataTable::~DataTable()
@@ -93,6 +96,7 @@ int DataTable::get_column_index(enum FieldType field)
 
 int DataTable::get_column_index(const QString& columnName)
 {
+    qDebug() << "Enter function get_column_index in class DataTable.";
     auto it = mapColumnName2IndexPtr->find(columnName);
     if (it != mapColumnName2IndexPtr->end()) {
         return it.value();
@@ -374,7 +378,6 @@ bool DataTable::update_cell(int rowIndex, const QString& columnName, const QStri
     return update_cell(rowIndex, columnIndex, value);
 }
 
-
 void DataTable::readExcelFile(const QString &filename, std::shared_ptr<QMapStr2Str> importColumnNameMap, int sheetIndex, int columnNameRow, int dataStartRow)
 {
     QXlsx::Document document(filename);
@@ -384,7 +387,18 @@ void DataTable::readExcelFile(const QString &filename, std::shared_ptr<QMapStr2S
             qDebug() << "文件中没有足够的表格，目前只有" << sheetNames.size() << "个sheet.";
         } else {
             QString sheetName = sheetNames[sheetIndex];
-            document.selectSheet(sheetName);
+            readExcelFile(filename, importColumnNameMap, sheetName, columnNameRow, dataStartRow);
+        }
+    } else {
+        qCritical() << "读取文件" << filename << "失败！";
+    }
+}
+
+void DataTable::readExcelFile(const QString& filename, std::shared_ptr<QMapStr2Str> importColumnNameMap, const QString& sheetName, int columnNameRow, int dataStartRow)
+{
+    QXlsx::Document document(filename);
+    if (document.load()) {
+        if (document.selectSheet(sheetName)) {
             QXlsx::AbstractSheet* sheet = document.sheet(sheetName);
             QXlsx::Worksheet* worksheet = (QXlsx::Worksheet*) sheet;
             worksheet->getFullCells(&maxRow, &maxCol);
@@ -394,9 +408,11 @@ void DataTable::readExcelFile(const QString &filename, std::shared_ptr<QMapStr2S
             qDebug() << "表格数据读取完毕，开始读取分析字段名";
             readExcelColumnNames(worksheet, importColumnNameMap, columnNameRow);
             qDebug() << "字段名读取完毕";
+        } else {
+            qCritical() << "文件" << filename << "不含名为" << sheetName << "的sheet，读取失败！";
         }
     } else {
-        qDebug() << "读取文件" << filename << "失败！";
+        qCritical() << "读取文件" << filename << "失败！";
     }
 }
 
@@ -463,19 +479,26 @@ void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, std::shared_pt
     for (int i = 1; i <= maxCol; ++i) {
         QString newColumnName = worksheet->read(columnNameRow, i).toString();
         qDebug() << "读取Excel文件第 " << i << " 个列名是：" << newColumnName;
+        qDebug() << "temp1";
+        if (importColumnNameMap == nullptr) qDebug() << "importColumnNameMap == nullptr";
+        qDebug() << "temp2";
         if (importColumnNameMap->find(newColumnName) != importColumnNameMap->end()) {
         //if (config->readImportColumnNameNeedConvert(newColumnName)) {
             newColumnName = importColumnNameMap->find(newColumnName).value();
             qDebug() << "将列名更新为" << newColumnName;
         }
+        qDebug() << "temp3";
         int newIndex = get_column_index(newColumnName);
+        qDebug() << "获取列名" << newColumnName << "的当前index为" << newIndex;
         if (newIndex >= 0) {
             newColumnName.append("（重复列名）");
             qWarning() << "发现重复列名，已更名为“" << newColumnName << "”";
         }
-        newColumnNames.push_back(newColumnName);
+        qDebug() << "添加列名" << newColumnName;
+        addColumnName(newColumnName);
+        //newColumnNames.push_back(newColumnName);
     }
-    set_columnNames(newColumnNames);
+    //set_columnNames(newColumnNames);
     //以下均为打印日志需要，与函数主要功能无关
     QString printTemp = "读取的列名清单：";
     for (QString s : *(this->columnNamesPtr)) {
@@ -535,7 +558,7 @@ void DataTable::updateWith(DataTable* newTable, const QString& primaryKeyColumnN
     for (QString newColumnName : *(newTable->get_columnNames())) {
         if (get_column_index(newColumnName) < 0) {
             qDebug() << "主表不存在字段" << newColumnName << ", 在主表中添加这一列";
-            addColumn(newColumnName);
+            addNewEmptyColumn(newColumnName);
         }
     }
     //获取新增表的主键序号
@@ -638,8 +661,18 @@ void DataTable::updateWith(DataTable* newTable, enum FieldType primaryKeyField, 
 }
 */
 
+void DataTable::addColumnName(const QString& columnName)
+{
+    if (get_column_index(columnName) >= 0) {
+        qCritical("已存在名为%s的列！", columnName.toStdString().c_str());
+        return;
+    }
+    int columnIndex = columnNamesPtr->size();
+    columnNamesPtr->push_back(columnName);
+    mapColumnName2IndexPtr->insert(columnName, columnIndex);
+}
 
-void DataTable::addColumn(const QString& columnName)
+void DataTable::addNewEmptyColumn(const QString& columnName)
 {
     if (get_column_index(columnName) >= 0) {
         qCritical("已存在名为%s的列！", columnName.toStdString().c_str());
@@ -712,7 +745,7 @@ void DataTable::addColumn(FieldType field, PtrQMapF2S mapF2S)
 */
 
 //void DataTable::writeExcelFile(const QString& filename, const std::vector<enum FieldType>& fieldTypes, PtrQMapF2S mapF2S)
-void DataTable::writeExcelFile(const QString& filename, const std::shared_ptr<QVector<QString>>& exportColumnNames, std::shared_ptr<QMapStr2Str> mappingExport)
+void DataTable::writeExcelFile(const QString& filename, const std::shared_ptr<QVector<QString>>& exportColumnNamesPtr, std::shared_ptr<QMapStr2Str> mappingExport)
 //void DataTable::writeExcelFile(const QString& filename, const QString &exportBookType, Config *config)
 /* 参考代码：
  * https://blog.csdn.net/qq_37603131/article/details/128555121
@@ -723,16 +756,22 @@ void DataTable::writeExcelFile(const QString& filename, const std::shared_ptr<QV
     xlsx.selectSheet("Sheet0");
     QXlsx::Format titleFormat;
     setTitleFormat(titleFormat);
-    for (int i = 0; i < exportColumnNames->size(); ++i) {
-        xlsx.write(1, i+1, (*exportColumnNames)[i], titleFormat);
+    QVecString exportColumnNames;
+    if (exportColumnNamesPtr == nullptr) {
+        exportColumnNames = *(get_columnNames());
+    } else {
+        exportColumnNames = *exportColumnNamesPtr;
+    }
+    for (int i = 0; i < exportColumnNames.size(); ++i) {
+        xlsx.write(1, i+1, exportColumnNames[i], titleFormat);
     }
     QXlsx::Format contentFormat;
     setContentFormat(contentFormat);
     for (int i = 0; i < get_data()->size(); ++i) {
-        for (int j = 0; j < exportColumnNames->size(); ++j) {
+        for (int j = 0; j < exportColumnNames.size(); ++j) {
             QString cellValue;
-            if (mappingExport->find((*exportColumnNames)[j]) != mappingExport->end()) {
-                QString dataTableColumnName = mappingExport->find((*exportColumnNames)[j]).value();
+            if (mappingExport->find(exportColumnNames[j]) != mappingExport->end()) {
+                QString dataTableColumnName = mappingExport->find(exportColumnNames[j]).value();
                 if (dataTableColumnName.contains('&')) {
                     QStringList columns = dataTableColumnName.split("&");
                     for (QString columnName : columns) {
@@ -747,10 +786,10 @@ void DataTable::writeExcelFile(const QString& filename, const std::shared_ptr<QV
                 }
             } else {
                 //没找到，说明不需要转换字段，什么都不做
-                cellValue = get_cell_value(i, get_column_index((*exportColumnNames)[j]));
+                cellValue = get_cell_value(i, get_column_index(exportColumnNames[j]));
             }
             if (cellValue.length() == 0) {
-                qWarning() << "查不到目标字段为" << (*exportColumnNames)[j] << "的数据。";
+                qWarning() << "查不到目标字段为" << exportColumnNames[j] << "的数据。";
             }
             xlsx.write(i+2, j+1, get_cell_value(i, j), contentFormat);
         }

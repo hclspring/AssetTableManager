@@ -133,6 +133,7 @@ bool Config::parse_config_file_v2()
             if (value1.type() != QJsonValue::Array) {
                 qWarning("exportSettings的值应当是列表。");
             } else {
+                qDebug() << "开始解析exportSettings";
                 QJsonArray array = value1.toArray();
                 int arraySize = array.size();
 
@@ -143,32 +144,25 @@ bool Config::parse_config_file_v2()
                 this->mappingExportBookType2ColumnNames.clear();
 
                 for (int i = 0; i < arraySize; ++i) {
+                    qDebug() << "开始解析第" << i << "个元素";
                     QJsonObject object2 = array[i].toObject();
 
                     if (object2.contains("exportBookType")) {
                         QString newBookType;
                         parse_config_string(object2, "exportBookType", newBookType);
+                        qDebug() << "解析到exportBookType = " << newBookType;
                         if (newBookType.length() > 0) {
                             exportBookTypes.push_back(newBookType);
                         }
                         parse_config_index(object2, mappingS2SheetIndex, "sheetIndex", newBookType);
                         parse_config_index(object2, mappingS2ColumnNameRow, "columnNameRow", newBookType);
                         parse_config_index(object2, mappingS2DataStartRow, "dataStartRow", newBookType);
-
-                        if (object2.contains("columnNames")) {
-                            QJsonValue value2 = object2.value("columnNames");
-                            if (value2.type() == QJsonValue::Array) {
-                                QJsonArray array2 = value2.toArray();
-                                QVector<QString> columnNames;
-                                for (int j = 0; j < array2.size(); ++j) {
-                                    QString columnName = array2[j].toString();
-                                    columnNames.push_back(columnName);
-                                }
-                                mappingExportBookType2ColumnNames.insert(newBookType, std::make_shared<QVecString>(columnNames));
-                            }
-                        }
+                        QVecString columnNames;
+                        parse_config_vecstr(object2, "columnNames", columnNames);
+                        mappingExportBookType2ColumnNames.insert(newBookType, std::make_shared<QVecString>(columnNames));
                     } //如果该项目用于提供输出表格字段
                     else if (object2.contains("exportColumnDefinition")) {
+                        qDebug() << "开始解析exportColumnDefinition";
                         QJsonValue value2 = object2.value("exportColumnDefinition");
                         if (value2.type() == QJsonValue::Array) {
                             QJsonArray array2 = value2.toArray();
@@ -177,61 +171,52 @@ bool Config::parse_config_file_v2()
                                 QString targetStr, sourceStr;
                                 parse_config_string(object3, "target", targetStr);
                                 parse_config_string(object3, "source", sourceStr);
+                                qDebug() << "解析到第" << j << "对字段对，source = " << sourceStr << ", target = " << targetStr;
                                 mappingExportTarget2Source.insert(targetStr, sourceStr);
                             }
                         } else {
                             qWarning() << "exportColumnDefinition的值应当是列表。";
                         }
                     } else {
-                        qWarning() << "发现未知关键词";
+                        qWarning() << "未发现已知关键词exportBookType或exportColumnDefinition";
                     }
 
                 } // end for iterating the array of bookSettings
             }
-            qDebug()<< "读取bookSettings结束。";
-        } else if (object.contains("importSettings")) {
-            QJsonValue value1 = object.value("importSettings");
-            if (value1.type() != QJsonValue::Array) {
-                qWarning("importSettings的值应当是列表。");
-            } else {
-                QJsonArray array = value1.toArray();
-                int arraySize = array.size();
-                for (int i = 0; i < arraySize; ++i) {
-                    QJsonObject object2 = array[i].toObject();
-
-                    if (object2.contains("importColumnDefinition")) {
-                        QJsonValue value2 = object2.value("importColumnDefinition");
-                        if (value2.type() == QJsonValue::Array) {
-                            QJsonArray array2 = value2.toArray();
-                            for (int j = 0; j < array2.size(); ++j) {
-                                QJsonObject object3 = array2[j].toObject();
-                                QString targetStr, sourceStr;
-                                parse_config_string(object3, "target", targetStr);
-                                parse_config_string(object3, "source", sourceStr);
-                                mappingImportTarget2Source.insert(targetStr, sourceStr);
-                                mappingImportSource2Target.insert(sourceStr, targetStr);
-                            }
-                        } else {
-                            qWarning() << "importColumnDefinition的值应当是列表。";
-                        }
-                    } else {
-                        qWarning() << "发现未知关键词";
+            qDebug()<< "读取exportSettings结束。";
+        } else  {
+            qWarning() << "未发现已知关键词exportSettings";
+        }
+        if (object.contains("importSettings")) {
+            qDebug() << "读取importSettings";
+            QJsonObject object2 = object.value("importSettings").toObject();
+            if (object2.contains("importColumnDefinition")) {
+                qDebug() << "开始解析importColumnDefinition";
+                QJsonValue value = object2.value("importColumnDefinition");
+                if (value.type() == QJsonValue::Array) {
+                    QJsonArray array = value.toArray();
+                    for (int i = 0; i < array.size(); ++i) {
+                        QJsonObject object3 = array[i].toObject();
+                        QString targetStr, sourceStr;
+                        parse_config_string(object3, "target", targetStr);
+                        parse_config_string(object3, "source", sourceStr);
+                        mappingImportTarget2Source.insert(targetStr, sourceStr);
+                        mappingImportSource2Target.insert(sourceStr, targetStr);
                     }
-                } // for循环
-            }
-        } else if (object.contains("primaryKeyColumns")) {
-            QJsonValue value1 = object.value("primaryKeyColumns");
-            if (value1.type() != QJsonValue::Array) {
-                qWarning("importSettings的值应当是列表。");
-            } else {
-                QJsonArray array = value1.toArray();
-                int arraySize = array.size();
-                primaryKeyColumnNames.clear();
-                for (int i = 0; i < arraySize; ++i) {
-                    QString x = array[i].toString();
-                    primaryKeyColumnNames.push_back(x);
+                } else {
+                    qWarning() << "importColumnDefinition的值应当是列表。";
                 }
+            } else {
+                qWarning() << "未发现已知关键词importColumnDefinition";
             }
+        } else {
+            qWarning() << "未发现已知关键词importSettings";
+        }
+        if (object.contains("primaryKeyColumns")) {
+            primaryKeyColumnNames.clear();
+            parse_config_vecstr(object, "primaryKeyColumns", primaryKeyColumnNames);
+        } else {
+            qWarning() << "未发现已知关键词primaryKeyColumns";
         }
     }
 
@@ -557,3 +542,19 @@ void Config::parse_config_string(QJsonObject& object, const QString& key, QStrin
     }
 }
 
+void Config::parse_config_vecstr(QJsonObject& object, const QString& key, QVector<QString>& value)
+{
+    if (object.contains(key)) {
+        QJsonValue value3 = object.value(key);
+        if (value3.type() == QJsonValue::Array) {
+            value.clear();
+            for (int i = 0; i < value3.toArray().size(); ++i) {
+                value.push_back(value3.toArray().at(i).toString());
+            }
+        } else  {
+            qWarning() << "未能识别到合法的" << key;
+        }
+    } else {
+        qWarning() << "未能识别到" << key << "的key";
+    }
+}

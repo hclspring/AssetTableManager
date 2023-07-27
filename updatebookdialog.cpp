@@ -9,6 +9,11 @@ UpdateBookDialog::UpdateBookDialog(Config* config, QWidget *parent) :
 {
     ui->setupUi(this);
     this->config = config;
+    for (QString key : config->getPrimaryKeyColumnNames()) {
+        ui->primaryKeyComboBox->addItem(key);
+    }
+    ui->primaryKeyComboBox->setCurrentIndex(-1);
+    /*
     qDebug() << "测试点2";
     QVector<QString> bookNames = config->getExportBookTypes();
     qDebug() << "测试点1";
@@ -19,6 +24,7 @@ UpdateBookDialog::UpdateBookDialog(Config* config, QWidget *parent) :
     ui->mappingComboBox->setCurrentIndex(-1);
     qDebug() << "测试点";
     qDebug() << "函数UpdateDialog()已结束。";
+    */
 }
 
 UpdateBookDialog::~UpdateBookDialog()
@@ -31,9 +37,11 @@ QString UpdateBookDialog::get_filePath() {
     return filePath;
 }
 
+/*
 QString UpdateBookDialog::get_mappingName() {
     return mappingName;
 }
+*/
 
 QString UpdateBookDialog::get_primaryKeyStr() {
     return primaryKeyStr;
@@ -46,8 +54,8 @@ void UpdateBookDialog::on_browseButton_clicked() {
 void UpdateBookDialog::on_confirmButton_clicked() {
     filePath = ui->filePathEdit->toPlainText();
     qDebug() << "选择读取更新文件：" << filePath;
-    mappingName = ui->mappingComboBox->currentText();
-    qDebug() << "选择字段映射：" << mappingName;
+    //mappingName = ui->mappingComboBox->currentText();
+    //qDebug() << "选择字段映射：" << mappingName;
     primaryKeyStr = ui->primaryKeyComboBox->currentText();
     this->close();
     delete ui;
@@ -55,10 +63,19 @@ void UpdateBookDialog::on_confirmButton_clicked() {
 
 void UpdateBookDialog::on_cancelButton_clicked() {
     filePath = "";
-    mappingName = "";
+    //mappingName = "";
     primaryKeyStr = "";
     this->close();
     delete ui;
+}
+
+
+void UpdateBookDialog::on_primaryKeyComboBox_currentTextChanged() {
+    if (ui->primaryKeyComboBox->currentIndex() == -1) {
+        ui->confirmButton->setDisabled(true);
+    } else {
+        ui->confirmButton->setDisabled(false);
+    }
 }
 
 /*

@@ -18,24 +18,43 @@ class ImportBookDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ImportBookDialog(Config* config, QWidget *parent = nullptr);
+    explicit ImportBookDialog(Config* config, bool needPrimaryKey = false, QWidget *parent = nullptr);
     ~ImportBookDialog();
 
 private:
     Ui::ImportBookDialog *ui;
     QString filePath;
-    QString inputStyle;
+    QString sheetName;
+    QString primaryKey;
+    int dataStartRow;
+    int columnNameRow;
+    //QString inputStyle;
 
 public:
-    QString get_filePath();
-    QString get_inputStyle();
+    const QString &getFilePath() const;
+    //QString get_inputStyle();
+
+    const QString &getSheetName() const;
+    const QString &getPrimaryKey() const;
+    int getDataStartRow() const;
+    int getColumnNameRow() const;
 
 private slots:
     void on_browseButton_clicked();
     void on_confirmButton_clicked();
     void on_cancelButton_clicked();
+    void on_primaryKeyComboBox_currentTextChanged();
+    void on_sheetNameComboBox_currentTextChanged();
+    void on_dataStartRowLineEdit_currentTextChanged();
+    void on_columnNameRowLineEdit_currentTextChanged();
 
 private:
+    bool check_allInput_legal();
+    bool check_sheetName_legal();
+    bool check_primaryKey_legal();
+    bool check_dataStartRow_legal();
+    bool check_columnNameRow_legal();
+    void set_confirmButton();
     //QVector<QString> read_book_names(const QString& bookRootPath);
 
 private slots:

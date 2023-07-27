@@ -11,6 +11,7 @@ ExportBookDialog::ExportBookDialog(Config* config, QWidget *parent)
 {
     ui->setupUi(this);
     QVector<QString> mappingNames = config->getExportBookTypes();
+    mappingNames.push_back("全部字段");
     for (QString mappingName : mappingNames) {
         ui->exportStyleComboBox->addItem(mappingName);
     }
