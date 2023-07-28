@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include "exportbookdialog.h"
 #include "importbookdialog.h"
-#include "updatebookdialog.h"
 #include "config.h"
 #include "datatable.h"
 
@@ -22,9 +21,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete ui;
     delete config;
     delete dataTable;
+    //delete ui;
 }
 
 void MainWindow::on_importBookButton_clicked()
@@ -63,7 +62,7 @@ void MainWindow::on_updateBookButton_clicked()
         update_updateFilePathNameTextBrowser(dialog->getFilePath());
         DataTable * updateTable = new DataTable;
         qDebug() << "开始读取更新文件……";
-        dataTable->readExcelFile(filePath,
+        updateTable->readExcelFile(filePath,
                                  config->getMappingImportSource2Target(),
                              dialog->getSheetName(),
                              dialog->getColumnNameRow(),
@@ -88,10 +87,8 @@ void MainWindow::on_exportBookButton_clicked()
         QString outputStyle = dialog->get_outputStyle();
         qDebug() << "输出格式：" << outputStyle;
         QVector<QString> exportColumnNames;
-        if (config->getExportColumnNames(outputStyle) !=  nullptr) {
-            dataTable->writeExcelFile(filePath, config->getExportColumnNames(outputStyle), config->getMappingExportTarget2Source());
-            append_updateProcessTextBrowser("已导出台账文件：" + filePath);
-        }
+        dataTable->writeExcelFile(filePath, config->getExportColumnNames(outputStyle), config->getMappingExportTarget2Source());
+        append_updateProcessTextBrowser("已导出台账文件：" + filePath);
     }
     delete dialog;
 }
@@ -158,6 +155,7 @@ void MainWindow::update_updatePrimaryKeyTextBrowser(const QString& text)
 
 void MainWindow::append_updateProcessTextBrowser(const QString& text)
 {
+    qDebug() << "Enter function append_updateProcessTextBrowser in class mainwindow.";
     appendTextBrowserContent(" * " + text, ui->updateProcessTextBrowser);
 }
 

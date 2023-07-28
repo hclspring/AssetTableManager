@@ -11,10 +11,11 @@ ExportBookDialog::ExportBookDialog(Config* config, QWidget *parent)
 {
     ui->setupUi(this);
     QVector<QString> mappingNames = config->getExportBookTypes();
-    mappingNames.push_back("全部字段");
+    mappingNames.push_back("");
     for (QString mappingName : mappingNames) {
         ui->exportStyleComboBox->addItem(mappingName);
     }
+    ui->exportStyleComboBox->setCurrentIndex(-1);
 }
 
 ExportBookDialog::~ExportBookDialog() {
@@ -39,7 +40,11 @@ void ExportBookDialog::on_browseButton_clicked() {
 
 void ExportBookDialog::on_confirmButton_clicked() {
     filePath = ui->filePathEdit->toPlainText();
-    outputStyle = ui->exportStyleComboBox->currentText();
+    if (ui->exportStyleComboBox->currentIndex() < 0) {
+        outputStyle = "";
+    } else {
+        outputStyle = ui->exportStyleComboBox->currentText();
+    }
     this->close();
     delete ui;
 }

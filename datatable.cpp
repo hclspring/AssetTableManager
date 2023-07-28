@@ -300,7 +300,11 @@ std::shared_ptr<QVector<QString>> DataTable::get_formatted_row(int rowIndex, QVe
     assert(check_row_index(rowIndex));
     for (QString referenceColumnName : referenceColumnNames) {
         int columnIndex = get_column_index(referenceColumnName);
-        result.push_back(std::move(get_cell_value(rowIndex, columnIndex)));
+        if (columnIndex >= 0) {
+            result.push_back(std::move(get_cell_value(rowIndex, columnIndex)));
+        } else {
+            result.push_back("");
+        }
     }
     return std::make_shared<QVector<QString>>(result);
 }
@@ -479,15 +483,12 @@ void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, std::shared_pt
     for (int i = 1; i <= maxCol; ++i) {
         QString newColumnName = worksheet->read(columnNameRow, i).toString();
         qDebug() << "读取Excel文件第 " << i << " 个列名是：" << newColumnName;
-        qDebug() << "temp1";
         if (importColumnNameMap == nullptr) qDebug() << "importColumnNameMap == nullptr";
-        qDebug() << "temp2";
         if (importColumnNameMap->find(newColumnName) != importColumnNameMap->end()) {
         //if (config->readImportColumnNameNeedConvert(newColumnName)) {
             newColumnName = importColumnNameMap->find(newColumnName).value();
             qDebug() << "将列名更新为" << newColumnName;
         }
-        qDebug() << "temp3";
         int newIndex = get_column_index(newColumnName);
         qDebug() << "获取列名" << newColumnName << "的当前index为" << newIndex;
         if (newIndex >= 0) {
@@ -496,6 +497,7 @@ void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, std::shared_pt
         }
         qDebug() << "添加列名" << newColumnName;
         addColumnName(newColumnName);
+        qDebug() << "获取列名" << newColumnName << "的当前index为" << get_column_index(newColumnName);
         //newColumnNames.push_back(newColumnName);
     }
     //set_columnNames(newColumnNames);

@@ -90,7 +90,6 @@ void ImportBookDialog::on_confirmButton_clicked() {
     columnNameRow = ui->columnNameRowLineEdit->text().toInt();
     //inputStyle = ui->importStyleComboBox->currentText();
     this->close();
-    delete ui;
 }
 
 void ImportBookDialog::on_cancelButton_clicked() {
@@ -101,7 +100,6 @@ void ImportBookDialog::on_cancelButton_clicked() {
     columnNameRow = -1;
     //inputStyle = "";
     this->close();
-    delete ui;
 }
 
 void ImportBookDialog::on_primaryKeyComboBox_currentTextChanged() {
