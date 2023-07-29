@@ -43,12 +43,10 @@ void ExportBookDialog::on_confirmButton_clicked() {
         outputStyle = ui->exportStyleComboBox->currentText();
     }
     this->close();
-    delete ui;
 }
 
 void ExportBookDialog::on_cancelButton_clicked() {
     filePath = "";
     outputStyle = "";
     this->close();
-    delete ui;
 }
