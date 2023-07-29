@@ -34,7 +34,7 @@
     <property name="geometry">
      <rect>
       <x>220</x>
-      <y>140</y>
+      <y>120</y>
       <width>261</width>
       <height>71</height>
      </rect>
@@ -50,7 +50,7 @@
     <property name="geometry">
      <rect>
       <x>220</x>
-      <y>400</y>
+      <y>280</y>
       <width>261</width>
       <height>71</height>
      </rect>
@@ -66,7 +66,7 @@
     <property name="geometry">
      <rect>
       <x>220</x>
-      <y>270</y>
+      <y>200</y>
       <width>261</width>
       <height>71</height>
      </rect>
@@ -78,73 +78,13 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QTextBrowser" name="bookFilePathNameTextBrowser">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>140</y>
-      <width>231</width>
-      <height>71</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QTextBrowser" name="inputStyleTextBrowser">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>220</y>
-      <width>231</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QTextBrowser" name="updateFilePathNameTextBrowser">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>270</y>
-      <width>231</width>
-      <height>71</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QTextBrowser" name="updateMappingTextBrowser">
-    <property name="geometry">
-     <rect>
-      <x>220</x>
-      <y>350</y>
-      <width>261</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QTextBrowser" name="updatePrimaryKeyTextBrowser">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>350</y>
-      <width>231</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QTextBrowser" name="updateProcessTextBrowser">
     <property name="geometry">
      <rect>
-      <x>5</x>
-      <y>190</y>
-      <width>211</width>
-      <height>281</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QTextBrowser" name="exportInfoTextBrowser">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>400</y>
-      <width>231</width>
-      <height>71</height>
+      <x>40</x>
+      <y>360</y>
+      <width>651</width>
+      <height>201</height>
      </rect>
     </property>
    </widget>
@@ -158,6 +98,12 @@
      <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuAsset_Table_Manager">
+    <property name="title">
+     <string>Asset Table Manager</string>
+    </property>
+   </widget>
+   <addaction name="menuAsset_Table_Manager"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>

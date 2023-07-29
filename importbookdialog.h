@@ -6,6 +6,8 @@
 #include <QComboBox>
 #include <QList>
 
+#include "xlsxdocument.h"
+
 class Config;
 class DataTable;
 
@@ -23,16 +25,15 @@ public:
 
 private:
     Ui::ImportBookDialog *ui;
+    Config *config;
     QString filePath;
     QString sheetName;
     QString primaryKey;
     int dataStartRow;
     int columnNameRow;
-    //QString inputStyle;
 
 public:
     const QString &getFilePath() const;
-    //QString get_inputStyle();
 
     const QString &getSheetName() const;
     const QString &getPrimaryKey() const;
@@ -55,7 +56,6 @@ private:
     bool check_dataStartRow_legal();
     bool check_columnNameRow_legal();
     void set_confirmButton();
-    //QVector<QString> read_book_names(const QString& bookRootPath);
 
 private slots:
     void test();

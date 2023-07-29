@@ -9,7 +9,10 @@ ImportBookDialog::ImportBookDialog(Config* config, bool needPrimaryKey, QWidget 
     : QDialog(parent),
       ui(new Ui::ImportBookDialog)
 {
+    this->config = config;
     ui->setupUi(this);
+    ui->sheetNameComboBox->setDisabled(true);
+
     ui->primaryKeyLabel->setVisible(needPrimaryKey);
     ui->primaryKeyComboBox->setVisible(needPrimaryKey);
 
@@ -19,18 +22,9 @@ ImportBookDialog::ImportBookDialog(Config* config, bool needPrimaryKey, QWidget 
     if (needPrimaryKey) {
         ui->primaryKeyComboBox->setCurrentIndex(-1);
     }
+
     ui->columnNameRowLineEdit->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
     ui->dataStartRowLineEdit->setValidator(new QRegExpValidator(QRegExp("[0-9]+$")));
-    /*
-    qDebug() << "开始构建importBookDialog";
-    QVector<QString> bookNames = config->getExportBookTypes();
-    qDebug() << "从配置中获取bookType，共有" << bookNames.size() << "个bookType.";
-    for (QString mappingName : bookNames) {
-        ui->importStyleComboBox->addItem(mappingName);
-    }
-    ui->importStyleComboBox->setCurrentIndex(-1);
-    qDebug() << "结束构建importBookDialog";
-    */
 }
 
 ImportBookDialog::~ImportBookDialog() {
@@ -61,22 +55,18 @@ const QString &ImportBookDialog::getFilePath() const {
     return filePath;
 }
 
-/*
-QString ImportBookDialog::get_inputStyle() {
-    return inputStyle;
-}
-*/
-
 void ImportBookDialog::on_browseButton_clicked() {
     ui->filePathEdit->setText(QFileDialog::getOpenFileName(this, "选择打开文件", "./"));
 
     QXlsx::Document document(ui->filePathEdit->toPlainText());
+    ui->sheetNameComboBox->clear();
     if (document.load()) {
         QStringList sheetNames = document.sheetNames();
         for (QString sheetName : sheetNames) {
             ui->sheetNameComboBox->addItem(sheetName);
         }
-        ui->sheetNameComboBox->setCurrentIndex(0);
+        ui->sheetNameComboBox->setCurrentIndex(-1);
+        ui->sheetNameComboBox->setDisabled(false);
     } else {
         qCritical() << "无法按照Excel表格读取文件" << ui->filePathEdit->toPlainText();
     }
@@ -88,7 +78,6 @@ void ImportBookDialog::on_confirmButton_clicked() {
     primaryKey = ui->primaryKeyComboBox->currentText();
     dataStartRow = ui->dataStartRowLineEdit->text().toInt();
     columnNameRow = ui->columnNameRowLineEdit->text().toInt();
-    //inputStyle = ui->importStyleComboBox->currentText();
     this->close();
 }
 
@@ -98,7 +87,6 @@ void ImportBookDialog::on_cancelButton_clicked() {
     primaryKey = "";
     dataStartRow = -1;
     columnNameRow = -1;
-    //inputStyle = "";
     this->close();
 }
 
@@ -169,13 +157,3 @@ void ImportBookDialog::set_confirmButton() {
 void ImportBookDialog::test() {
     qDebug() << "test slot.";
 }
-
-/*
-QVector<QString> ImportBookDialog::read_book_names(const QString& bookRootPath)
-{
-    ;
-}
-*/
-
-
-

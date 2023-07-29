@@ -31,9 +31,6 @@ QString ExportBookDialog::get_outputStyle(){
 }
 
 void ExportBookDialog::on_browseButton_clicked() {
-    //filePath = QFileDialog::getOpenFileName(this, "选择单个文件", "./");
-    //filePath = QFileDialog::getSaveFileUrl(this, "选择文件");
-    //fileDir = QFileDialog::getExistingDirectory(this, "选择保存目录", "./");
     filePath = QFileDialog::getSaveFileName(this, "保存文件", "./", "表格文件(*.xlsx)");
     ui->filePathEdit->setText(filePath);
 }

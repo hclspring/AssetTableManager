@@ -33,14 +33,7 @@ private:
     Ui::MainWindow *ui;
 
 private:
-    void update_bookFilePathNameTextBrowser(const QString& text);
-    //void update_inputStyleTextBrowser(const QString& text);
-    void update_updateFilePathNameTextBrowser(const QString& text);
-    //void update_updateMappingTextBrowser(const QString& text);
-    void update_updatePrimaryKeyTextBrowser(const QString& text);
     void append_updateProcessTextBrowser(const QString& text);
-    void update_exportInfoTextBrowser(const QString& text);
-
     void updateTextBrowserContent(const QString& text, QTextBrowser* qtb);
     void appendTextBrowserContent(const QString& newText, QTextBrowser* qtb);
 

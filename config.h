@@ -26,22 +26,60 @@
  * 使用json文件保存相关配置
  * 示例如下：
 {
-"recordBookRootPath": "xxx",
-"bookSettings": [
-    {"bookName": "固定资产台账",
-    "__fieldMapping": "字段映射，给出每种台账的字段映射关系，即字段的type到name",
-    "fieldMapping": [
-    {"fieldType":"zichan", "fieldName":"资产"},
-    {"fieldType":"xxx", "fieldName":"xxx"}
+"recordBookRootPath": "D:\\QtProjects\\示例3",
+"__exportSettings": "设置导出的相关属性，例如字段列表和顺序",
+"exportSettings": [
+    {"exportBookType": "固定资产台账",
+    "sheetIndex": 0,
+    "columnNameRow": 1,
+    "dataStartRow": 2,
+    "__columnNames": "导出台账时的指定字段，而不是该台账只能识别的字段",
+    "columnNames": [
+        "卡片编号",
+        "实物资产编号",
+        "在建资产编号",
+        "设备名称",
+        "资产名称",
+        "资产品牌",
+        "规格型号",
+        "序列号",
+        "存放地点",
+        "...",
+        "备注"
     ]},
-    {"bookName": "无形资产台账",
-    "__fieldMapping": "字段映射，给出每种台账的字段映射关系，即字段的type到name",
-    "fieldMapping": [
-    {"fieldType":"zichan", "fieldName":"资产"},
-    {"fieldType":"xxx", "fieldName":"xxx"}
+    {"exportBookType": "无形资产台账",
+    "sheetIndex": 0,
+    "columnNameRow": 1,
+    "dataStartRow": 2,
+    "__columnNames": "导出台账时的指定字段，而不是该台账只能识别的字段",
+    "columnNames": [
+        "卡片编号",
+        "无形资产编号",
+        "在建资产编号",
+        "资产名称",
+        "存放地点",
+        "...",
+        "备注"
     ]},
-    {blabla....}
-]
+    {"exportColumnDefinition":[
+        {"target": "存放地点", "source": "所在机房"},
+        {"target": "房间内部位置", "source": "所在机柜&所在U数"}
+    ]}
+    ],
+"__importSettings": "设置导入的相关属性，具体内容待定",
+"importSettings": {
+    "__importColumnDefinition": "import和update（尤其是update）较为依赖此对应关系，目前仅支持单列数据的字段名转化，不支持多列数据字段名合并和分割",
+    "importColumnDefinition": [
+        {"target": "实物资产编号", "source": "资产编号"}
+    ]
+    },
+"primaryKeyColumns": [
+        "卡片编号",
+        "实物资产编号",
+        "无形资产编号",
+        "在建资产编号",
+        "序列号"
+    ]
 }
  */
 
@@ -65,17 +103,6 @@ private:
     QMapStr2Str mappingExportTarget2Source;
     QMapStr2Str mappingImportTarget2Source;
     QMapStr2Str mappingImportSource2Target;
-
-
-    /*
-     * 以下成员变量预计后续用不到，待删除
-
-    QVector<QString> recordBookNames;
-    //以下是两层map，第一层是bookName -> 字段映射，第二层是该bookName下字段汉字名称 -> 字段枚举类型（或反过来）
-    QMapPtrQMapS2F fieldMappingS2F;
-    QMapPtrQMapF2S fieldMappingF2S;
-    */
-
 
 public:
     // getter and setter functions
@@ -106,7 +133,6 @@ public:
 
 private:
     bool read_subdirs(const QString& rootPathStr, QVector<QString>& result, enum QDir::Filter filter);
-    // get_map_value_index: 获取key为string、value为非负整数的value，如果key不存在则返回-1
     int get_map_value_index(QMapString2Int& map, QString& key);
     // 读取配置json文件里的索引型数据，并插入到map里
     void parse_config_index(QJsonObject& object, QMapString2Int& map, const QString& key, QString& bookType);
