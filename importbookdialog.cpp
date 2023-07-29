@@ -29,6 +29,7 @@ ImportBookDialog::ImportBookDialog(Config* config, bool needPrimaryKey, QWidget 
 
 ImportBookDialog::~ImportBookDialog() {
     delete ui;
+    deleteLater();
 }
 
 const QString &ImportBookDialog::getSheetName() const

@@ -186,6 +186,7 @@ void DataTable::readExcelFile(const QString &filename, std::shared_ptr<QMapStr2S
     } else {
         qCritical() << "读取文件" << filename << "失败！";
     }
+    document.deleteLater();
 }
 
 void DataTable::readExcelFile(const QString& filename, std::shared_ptr<QMapStr2Str> importColumnNameMap, const QString& sheetName, int columnNameRow, int dataStartRow)
@@ -208,6 +209,7 @@ void DataTable::readExcelFile(const QString& filename, std::shared_ptr<QMapStr2S
     } else {
         qCritical() << "读取文件" << filename << "失败！";
     }
+    document.deleteLater();
 }
 
 void DataTable::readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow)
@@ -365,26 +367,32 @@ bool DataTable::writeExcelFile(const QString& filename, const std::shared_ptr<QV
     QXlsx::Format titleFormat;
     setTitleFormat(titleFormat);
     QVecString exportColumnNames;
+    //确定输出字段，如果参数为空指针，则输出所有字段；如果参数不空，则输出指定的字段
     if (exportColumnNamesPtr == nullptr) {
         exportColumnNames = *(get_columnNames());
     } else {
         exportColumnNames = *exportColumnNamesPtr;
     }
+    //输出字段名
     for (int i = 0; i < exportColumnNames.size(); ++i) {
         xlsx.write(1, i+1, exportColumnNames[i], titleFormat);
     }
     QXlsx::Format contentFormat;
     setContentFormat(contentFormat);
+    //对每一行数据进行输出
     for (int i = 0; i < get_data()->size(); ++i) {
+        //对每一个需要输出的字段进行读取和输出
         for (int j = 0; j < exportColumnNames.size(); ++j) {
-            QString cellValue;
+            QString cellValue = "";
             if (mappingExport->find(exportColumnNames[j]) != mappingExport->end()) {
+                //如果对应输出字段有定义到原生字段的映射关系，则找到原生字段
                 QString dataTableColumnName = mappingExport->find(exportColumnNames[j]).value();
                 if (dataTableColumnName.contains('&')) {
+                    //如果原生字段包括&，则通过&分割成多个字段，分别读取这几个字段的值，再拼接到一起
                     QStringList columns = dataTableColumnName.split("&");
                     for (QString columnName : columns) {
-                        if (get_column_index(columnName) >= 0) {
-                            cellValue.append(get_cell_value(i, get_column_index(columnName)));
+                        if (get_column_index(columnName.trimmed()) >= 0) {
+                            cellValue.append(get_cell_value(i, get_column_index(columnName.trimmed())));
                         }
                     }
                 } else {
@@ -404,7 +412,7 @@ bool DataTable::writeExcelFile(const QString& filename, const std::shared_ptr<QV
     }
     bool saveResult = xlsx.saveAs(filename);
     qDebug() << (saveResult ? "成功保存到Excel文件！" : "保存Excel文件失败！");
-    //xlsx.deleteLater();
+    xlsx.deleteLater();
     return saveResult;
 }
 

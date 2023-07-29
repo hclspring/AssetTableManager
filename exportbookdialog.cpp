@@ -20,6 +20,7 @@ ExportBookDialog::ExportBookDialog(Config* config, QWidget *parent)
 
 ExportBookDialog::~ExportBookDialog() {
     delete ui;
+    deleteLater();
 }
 
 QString ExportBookDialog::get_filePath(){

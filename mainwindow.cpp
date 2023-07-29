@@ -24,6 +24,7 @@ MainWindow::~MainWindow()
     }
     delete config;
     delete ui;
+    deleteLater();
     qDebug()  << "Exit ~MainWindow()";
 }
 
@@ -47,7 +48,7 @@ void MainWindow::on_importBookButton_clicked()
     }
     ui->updateBookButton->setDisabled(false);
     ui->exportBookButton->setDisabled(true);
-    delete dialog;
+    dialog->deleteLater();
 }
 
 void MainWindow::on_updateBookButton_clicked()
@@ -77,7 +78,7 @@ void MainWindow::on_updateBookButton_clicked()
         delete updateTable;
         ui->exportBookButton->setDisabled(false);
     }
-    delete dialog;
+    dialog->deleteLater();
 }
 
 
@@ -97,7 +98,7 @@ void MainWindow::on_exportBookButton_clicked()
             append_updateProcessTextBrowser("导出台账文件失败：" + filePath);
         }
     }
-    delete dialog;
+    dialog->deleteLater();
 }
 
 void MainWindow::append_updateProcessTextBrowser(const QString& text)
