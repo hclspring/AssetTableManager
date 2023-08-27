@@ -16,6 +16,17 @@
 
 #include "constant.h"
 
+/*
+20230826计划更新：
+1.key字段的值如果为空，更新时如何处置
+2.表头单元格颜色等属性如何定义和设置：台账使用初始属性，导出表使用默认属性
+3.内容单元格颜色沿用初始属性，更新后使用更新表格的属性
+QXlsx::Cell cell = *(worksheet->cellAt(r, c));
+QVariant qv = worksheet->cellAt(r, c)->readValue();
+QXlsx::Format format = worksheet->cellAt(r, c)->format();
+*/
+
+
 class Config;
 
 class DataTable
@@ -26,8 +37,8 @@ public:
 
 private:
     // data指表格台账数据，第一维为数据行，第二维为字段列
-    std::shared_ptr<QVector<QVector<QString>>> dataPtr;
-    std::shared_ptr<QVector<QString>> columnNamesPtr;
+    std::shared_ptr<QVector<QVector<QXlsx::Cell>>> dataPtr;
+    std::shared_ptr<QVector<QXlsx::Cell>> columnNamesPtr;
     std::shared_ptr<QMapString2Int> mapColumnName2IndexPtr;
 
     // maxRow指excel文件的最大行数，maxCol指excel文件的最大列数
@@ -36,12 +47,12 @@ private:
 public:
     //第一部分全部已确认无误
     //一、对成员变量的set/get函数
-    void set_data(QVector<QVector<QString>>& data);
+    void set_data(QVector<QVector<QXlsx::Cell>>& data);
     //void set(std::vector<int>& rowIndices, DataTable& referenceDataTable);
-    std::shared_ptr<QVector<QVector<QString>>> get_data();
-    void set_columnNames(QVector<QString>& newColumnNames);
-    std::shared_ptr<QVector<QString>> get_columnNames();
-    QString get_columnName(int columnIndex);//若不合法，则返回NULL
+    std::shared_ptr<QVector<QVector<QXlsx::Cell>>> get_data();
+    void set_columnNames(QVector<QXlsx::Cell>& newColumnNames);
+    std::shared_ptr<QVector<QXlsx::Cell>> get_columnNames();
+    QXlsx::Cell get_columnName(int columnIndex);//若不合法，则返回NULL
 
 
     //第二部分已全部确认无误
