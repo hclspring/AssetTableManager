@@ -7,6 +7,8 @@
 #include <QDebug>
 #include <memory>
 
+#include "xlsxdocument.h"
+
 
 typedef QMap<QString, int> QMapString2Int;
 typedef std::shared_ptr<QMapString2Int> PtrQMapStr2Int;
@@ -15,6 +17,21 @@ typedef std::shared_ptr<QVecString> PtrQVecStr;
 typedef QMap<QString, PtrQVecStr> QMapStr2Vec;
 typedef std::shared_ptr<QMapStr2Vec> PtrQMapStr2Vec;
 typedef QMap<QString, QString> QMapStr2Str;
+
+typedef QVector<QXlsx::Cell> QVecCell;
+typedef std::shared_ptr<QVecCell> PtrQVecCell;
+typedef QMap<QString, PtrQVecCell> QMapStr2VecCell;
+typedef std::shared_ptr<QMapStr2VecCell> PtrQmapStr2VecCell;
+
+
+static std::shared_ptr<QVecCell> GetCellsPtr(std::shared_ptr<QVecString> namesPtr)
+{
+    QVecCell cells;
+    for (QString s : *namesPtr) {
+        cells.push_back(QXlsx::Cell(s));
+    }
+    return std::make_shared<QVecCell>(cells);
+}
 
 
 /*

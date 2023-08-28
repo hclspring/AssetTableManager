@@ -69,7 +69,7 @@ void MainWindow::on_updateBookButton_clicked()
                              dialog->getDataStartRow());
         qDebug() << "读取更新文件完毕，开始更新……";
         if (dataTable->updateWith(updateTable, primaryKey)) {
-            qDebug() << "更新后的列数：" << dataTable->get_columnNames()->size();
+            qDebug() << "更新后的列数：" << dataTable->get_columnNameCells()->size();
             append_updateProcessTextBrowser("已按照此文件更新台账：" + filePath + "; 更新主键为：" + dialog->getPrimaryKey());
         } else {
             qDebug() << "更新失败";
@@ -90,7 +90,7 @@ void MainWindow::on_exportBookButton_clicked()
         QString filePath = dialog->get_filePath();
         QString outputStyle = dialog->get_outputStyle();
         qDebug() << "输出格式：" << outputStyle;
-        if (dataTable->writeExcelFile(filePath, config->getExportColumnNames(outputStyle), config->getMappingExportTarget2Source())) {
+        if (dataTable->writeExcelFile(filePath, GetCellsPtr(config->getExportColumnNames(outputStyle)), config->getMappingExportTarget2Source())) {
             qDebug() << "导出成功！";
             append_updateProcessTextBrowser("已导出台账文件：" + filePath);
         } else {
