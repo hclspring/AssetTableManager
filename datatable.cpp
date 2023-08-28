@@ -324,7 +324,7 @@ bool DataTable::updateWith(DataTable* newTable, const QString& primaryKeyColumnN
     //确认主表中存在主键字段
     int primaryKeyColumnIndex = get_column_index(primaryKeyColumnName);
     if (primaryKeyColumnIndex < 0) {
-        qWarning() << "主表中不存在主键字段，更新失败!" << primaryKeyColumnName;
+        qCritical() << "主表中不存在主键字段，更新失败!" << primaryKeyColumnName;
         return false;
     }
     //获取新增表的主键序号
@@ -348,7 +348,7 @@ bool DataTable::updateWith(DataTable* newTable, const QString& primaryKeyColumnN
         QXlsx::Cell primaryKeyCell = newTable->get_data()->at(rowIndexOfNewTable).at(primaryKeyColumnIndexOfNewTable);
         QString primaryKeyValue = primaryKeyCell.value().toString().trimmed();
         if (primaryKeyValue.length() == 0) {
-            qDebug() << "主键值为空，跳过更新相应数据";
+            qWarning() << "主键值为空，跳过更新相应数据";
             continue;
         }
         qDebug() << "更新表第" << rowIndexOfNewTable << "行的主键值为" << primaryKeyValue;

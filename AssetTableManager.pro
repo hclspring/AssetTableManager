@@ -13,6 +13,7 @@ SOURCES += \
     datatable.cpp \
     exportbookdialog.cpp \
     importbookdialog.cpp \
+    loginfo.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -22,6 +23,7 @@ HEADERS += \
     datatable.h \
     exportbookdialog.h \
     importbookdialog.h \
+    loginfo.h \
     mainwindow.h
 
 FORMS += \
@@ -41,3 +43,4 @@ QXLSX_SOURCEPATH=../../Qt/QXlsx/QXlsx/source/   # current QXlsx source path is .
 include(../../Qt/QXlsx/QXlsx/QXlsx.pri)
 
 # DEFINES += QT_NO_DEBUG_OUTPUT
+DEFINES += QT_MESSAGELOGCONTEXT
