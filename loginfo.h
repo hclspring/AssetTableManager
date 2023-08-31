@@ -6,6 +6,8 @@
 #include <QDir>
 #include <QDate>
 #include <QTime>
+#include <QMutex>
+#include <QMessageBox>
 #include <qt_windows.h>
 
 class LogInfo

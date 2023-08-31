@@ -18,19 +18,32 @@ typedef QMap<QString, PtrQVecStr> QMapStr2Vec;
 typedef std::shared_ptr<QMapStr2Vec> PtrQMapStr2Vec;
 typedef QMap<QString, QString> QMapStr2Str;
 
+/*
 typedef QVector<QXlsx::Cell> QVecCell;
 typedef std::shared_ptr<QVecCell> PtrQVecCell;
 typedef QMap<QString, PtrQVecCell> QMapStr2VecCell;
 typedef std::shared_ptr<QMapStr2VecCell> PtrQmapStr2VecCell;
 
+typedef std::vector<QXlsx::Cell> VecCell;
+typedef std::shared_ptr<VecCell> PtrVecCell;
+typedef QMap<QString, PtrVecCell> QMapStr2VecCell;
+typedef std::shared_ptr<QMapStr2VecCell> PtrQmapStr2VecCell;
+*/
 
-static std::shared_ptr<QVecCell> GetCellsPtr(std::shared_ptr<QVecString> namesPtr)
+typedef std::shared_ptr<QXlsx::Cell> PtrCell;
+typedef std::vector<PtrCell> VecPtrCell;
+typedef std::shared_ptr<VecPtrCell> PtrVecPtrCell;
+typedef QMap<QString, PtrVecPtrCell> QMapStr2VecCell;
+typedef std::shared_ptr<QMapStr2VecCell> PtrQmapStr2VecCell;
+
+
+static std::shared_ptr<VecPtrCell> GetCellsPtr(std::shared_ptr<QVecString> namesPtr)
 {
-    QVecCell cells;
+    VecPtrCell cells;
     for (QString s : *namesPtr) {
-        cells.push_back(QXlsx::Cell(s));
+        cells.push_back(std::make_shared<QXlsx::Cell>(s));
     }
-    return std::make_shared<QVecCell>(cells);
+    return std::make_shared<VecPtrCell>(cells);
 }
 
 

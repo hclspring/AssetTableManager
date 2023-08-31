@@ -35,6 +35,8 @@ void LogInfo::outputLog(QtMsgType type, const QMessageLogContext& context, const
         return;
     }
 
+    static QMutex mutex;
+    mutex.lock();
     QString typeStr = nullptr;
     switch(type) {
     case QtDebugMsg:    typeStr = "Debug"; break;
@@ -44,12 +46,13 @@ void LogInfo::outputLog(QtMsgType type, const QMessageLogContext& context, const
     case QtFatalMsg:    typeStr = "Fatal"; break;
     default:            break;
     }
-    QString logLine = QString("%1%2    %3:%4:%5    %7%8\r").arg("Time::")
+    QString logLine = QString("%1%2    %3:%4:%5    %7%8\r\n").arg("Time::")
             .arg(QTime::currentTime().toString("hh:mm:ss")).arg(typeStr)
             .arg(context.file).arg(context.line).arg(context.function)
             .arg("Log::").arg(msg);
     logFile.write(logLine.toUtf8());
     logFile.close();
+    mutex.unlock();
     //OutputDebugStringA(msg.toLocal8Bit());
 }
 

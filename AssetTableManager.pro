@@ -13,7 +13,7 @@ SOURCES += \
     datatable.cpp \
     exportbookdialog.cpp \
     importbookdialog.cpp \
-    loginfo.cpp \
+    #loginfo.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -23,7 +23,7 @@ HEADERS += \
     datatable.h \
     exportbookdialog.h \
     importbookdialog.h \
-    loginfo.h \
+    #loginfo.h \
     mainwindow.h
 
 FORMS += \

@@ -37,8 +37,8 @@ public:
 
 private:
     // data指表格台账数据，第一维为数据行，第二维为字段列
-    std::shared_ptr<QVector<QVector<QXlsx::Cell>>> dataPtr;
-    std::shared_ptr<QVector<QXlsx::Cell>> columnNameCellsPtr;
+    std::shared_ptr<std::vector<VecPtrCell>> dataPtr;
+    std::shared_ptr<VecPtrCell> columnNameCellVecPtr;
     std::shared_ptr<QMapString2Int> mapColumnName2IndexPtr;
 
     // maxRow指excel文件的最大行数，maxCol指excel文件的最大列数
@@ -47,12 +47,12 @@ private:
 public:
     //第一部分全部已确认无误
     //一、对成员变量的set/get函数
-    void set_data(QVector<QVecCell>& data);
+    void set_data(std::vector<VecPtrCell>& data);
     //void set(std::vector<int>& rowIndices, DataTable& referenceDataTable);
-    std::shared_ptr<QVector<QVecCell>> get_data();
-    void set_columnNameCells(QVecCell& newColumnNameCells);
-    std::shared_ptr<QVecCell> get_columnNameCells();
-    QXlsx::Cell get_columnNameCell(int columnIndex);//若不合法，则返回NULL
+    std::shared_ptr<std::vector<VecPtrCell>>& get_dataPtr();
+    void set_columnNameCellVecPtr(PtrVecPtrCell& newColumnNameCells);
+    PtrVecPtrCell get_columnNameCellVecPtr();
+    PtrCell get_columnNameCellPtr(int columnIndex);//若不合法，则返回NULL
 
 
     //第二部分已全部确认无误
@@ -74,19 +74,19 @@ public:
     bool check_column_index(int columnIndex); //已确认无误
     bool check_row_column_index(int rowIndex, int columnIndex); //已确认无误
     QString get_cell_str(int rowIndex, int columnIndex); //已确认无误
-    QXlsx::Cell get_cell_copy(int rowIndex, int columnIndex);
+    PtrCell get_dataCellPtr(int rowIndex, int columnIndex);
 
     //第四部分已确认无误
     //四、调整数据字段顺序：
-    std::shared_ptr<QVecCell> get_sorted_row(int rowIndex, QVecCell& referenceColumnNameCells);
+    PtrVecPtrCell get_sorted_row(int rowIndex, VecPtrCell& referenceColumnNameCells);
     //std::shared_ptr<QVecCell> get_sorted_row(int rowIndex, QVecString& referenceColumnNames);
 
     //第四部分已确认无误
     //四、更新数据
     // 对数据进行操作，成功返回true，失败返回false
-    bool add_row(QVecCell& dataRow);
-    bool update_cell(int rowIndex, int columnIndex, const QXlsx::Cell& cell);
-    bool update_cell(int rowIndex, const QString& columnName, const QXlsx::Cell& cell);
+    bool add_row(VecPtrCell& dataRow);
+    bool update_cell(int rowIndex, int columnIndex, const PtrCell& cell);
+    bool update_cell(int rowIndex, const QString& columnName, const PtrCell& cell);
     /*
     bool update_cell(int rowIndex, int columnIndex, const QString& value); //已确认无误
     bool update_cell(int rowIndex, const QString& columnName, const QString& value); //已确认无误
@@ -116,7 +116,7 @@ public:
 
 
     //七、写入表格文件
-    bool writeExcelFile(const QString& filename, const std::shared_ptr<QVecCell>& exportColumnNameCellsPtr, std::shared_ptr<QMapStr2Str> mappingExport);
+    bool writeExcelFile(const QString& filename, const PtrVecPtrCell& exportColumnNameCellsPtr, std::shared_ptr<QMapStr2Str> mappingExport);
 
     //八、设置表格格式
     void setTitleFormat(QXlsx::Format& format);

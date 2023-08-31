@@ -69,7 +69,7 @@ void MainWindow::on_updateBookButton_clicked()
                              dialog->getDataStartRow());
         qDebug() << "读取更新文件完毕，开始更新……";
         if (dataTable->updateWith(updateTable, primaryKey)) {
-            qDebug() << "更新后的列数：" << dataTable->get_columnNameCells()->size();
+            qDebug() << "更新后的列数：" << dataTable->get_columnNameCellVecPtr()->size();
             append_updateProcessTextBrowser("已按照此文件更新台账：" + filePath + "; 更新主键为：" + dialog->getPrimaryKey());
         } else {
             qDebug() << "更新失败";
