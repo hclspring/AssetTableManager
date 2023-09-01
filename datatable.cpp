@@ -49,7 +49,7 @@ PtrCell DataTable::get_columnNameCellPtr(int columnIndex)
 
 int DataTable::get_column_index(const QString& columnName)
 {
-    qDebug() << "Enter function get_column_index in class DataTable.";
+    //qDebug() << "Enter function get_column_index in class DataTable.";
     auto it = mapColumnName2IndexPtr->find(columnName.trimmed());
     if (it != mapColumnName2IndexPtr->end()) {
         return it.value();
@@ -390,10 +390,10 @@ void DataTable::addColumnName(const QString& columnName)
     }
     int columnIndex = columnNameCellVecPtr->size();
     PtrCell cell = std::make_shared<QXlsx::Cell>(columnName.trimmed());
-    qDebug() << columnName.trimmed() << " --- " << cell->value().toString();
+    //qDebug() << columnName.trimmed() << " --- " << cell->value().toString();
     columnNameCellVecPtr->push_back(cell);
     int size = columnNameCellVecPtr->size();
-    qDebug() << "当前columnNameCellsPtr最后一个列名为：" << columnNameCellVecPtr->at(size - 1)->value().toString();
+    //qDebug() << "当前columnNameCellsPtr最后一个列名为：" << columnNameCellVecPtr->at(size - 1)->value().toString();
     mapColumnName2IndexPtr->insert(columnName.trimmed(), columnIndex);
 }
 
