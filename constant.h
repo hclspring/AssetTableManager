@@ -40,10 +40,14 @@ typedef std::shared_ptr<QMapStr2VecCell> PtrQmapStr2VecCell;
 static std::shared_ptr<VecPtrCell> GetCellsPtr(std::shared_ptr<QVecString> namesPtr)
 {
     VecPtrCell cells;
-    for (QString s : *namesPtr) {
-        cells.push_back(std::make_shared<QXlsx::Cell>(s));
+    if (namesPtr != nullptr) {
+        for (QString s : *namesPtr) {
+            cells.push_back(std::make_shared<QXlsx::Cell>(s));
+        }
+        return std::make_shared<VecPtrCell>(cells);
+    } else {
+        return  nullptr;
     }
-    return std::make_shared<VecPtrCell>(cells);
 }
 
 

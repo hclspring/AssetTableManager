@@ -344,6 +344,10 @@ bool DataTable::updateWith(DataTable* newTable, const QString& primaryKeyColumnN
     for (int rowIndexOfNewTable = 0; rowIndexOfNewTable < newTable->get_dataPtr()->size(); ++rowIndexOfNewTable) {
         //获取主键值
         PtrCell primaryKeyCell = newTable->get_dataPtr()->at(rowIndexOfNewTable).at(primaryKeyColumnIndexOfNewTable);
+        if (primaryKeyCell == nullptr) {
+            qWarning() << "主键单元格为空，跳过更新相应数据";
+            continue;
+        }
         QString primaryKeyValue = primaryKeyCell->value().toString().trimmed();
         if (primaryKeyValue.length() == 0) {
             qWarning() << "主键值为空，跳过更新相应数据";

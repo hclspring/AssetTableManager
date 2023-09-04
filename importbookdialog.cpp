@@ -19,6 +19,7 @@ ImportBookDialog::ImportBookDialog(Config* config, bool needPrimaryKey, QWidget 
     for (QString key : config->getPrimaryKeyColumnNames()) {
         ui->primaryKeyComboBox->addItem(key);
     }
+
     if (needPrimaryKey) {
         ui->primaryKeyComboBox->setCurrentIndex(-1);
     }

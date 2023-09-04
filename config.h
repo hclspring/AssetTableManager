@@ -101,7 +101,7 @@ private:
     QMapString2Int mappingS2DataStartRow;
     QMapStr2Vec mappingExportBookType2ColumnNames;
     QMapStr2Str mappingExportTarget2Source;
-    QMapStr2Str mappingImportTarget2Source;
+    //QMapStr2Str mappingImportTarget2Source;
     QMapStr2Str mappingImportSource2Target;
 
 public:
