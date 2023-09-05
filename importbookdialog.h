@@ -27,6 +27,7 @@ private:
     Ui::ImportBookDialog *ui;
     Config *config;
     QString filePath;
+    QString updateFailedPath;
     QString sheetName;
     QString primaryKey;
     int dataStartRow;
@@ -34,6 +35,7 @@ private:
 
 public:
     const QString &getFilePath() const;
+    const QString &getUpdateFailedPath() const;
 
     const QString &getSheetName() const;
     const QString &getPrimaryKey() const;
@@ -42,6 +44,7 @@ public:
 
 private slots:
     void on_browseButton_clicked();
+    void on_updateFailedButton_clicked();
     void on_confirmButton_clicked();
     void on_cancelButton_clicked();
     void on_primaryKeyComboBox_currentTextChanged();

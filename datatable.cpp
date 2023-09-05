@@ -104,12 +104,22 @@ std::vector<int> DataTable::get_row_indices(const QString& columnName, QString& 
 
 bool DataTable::check_row_index(int rowIndex)
 {
-    return (rowIndex >= 0 && rowIndex < dataPtr->size());
+    if (rowIndex >= 0 && rowIndex < dataPtr->size()) {
+        return  true;
+    } else {
+        qWarning("行号超出限制：rowIndex = %d，应小于%d。", rowIndex, dataPtr->size());
+        return false;
+    }
 }
 
 bool DataTable::check_column_index(int columnIndex)
 {
-    return (columnIndex >= 0 && columnIndex < maxCol);
+    if (columnIndex >= 0 && columnIndex < maxCol) {
+        return true;
+    } else {
+        qWarning("列号超出限制：columnIndex = %d，应小于%d。", columnIndex, maxCol);
+        return false;
+    }
 }
 
 bool DataTable::check_row_column_index(int rowIndex, int columnIndex)
@@ -197,7 +207,7 @@ bool DataTable::add_row(VecPtrCell& dataRow)
         qWarning("添加的行中字段数量为%d，与要求数量%d不一致！", dataRow.size(), columnNameCellVecPtr->size());
         return false;
     } else {
-        add_row(dataRow);
+        dataPtr->push_back(dataRow);
         return true;
     }
 }
@@ -275,8 +285,21 @@ void DataTable::readExcelData(QXlsx::Worksheet* worksheet, int dataStartRow)
                 //不做任何处理，数据中该元素为空值
             } else {
                 qDebug() << "读取第" << r << "行、第" << c << "列：" << worksheet->cellAt(r, c)->value().toString();
-                get_dataPtr()->at(r-dataStartRow).at(c-1)->value() = worksheet->cellAt(r, c)->value();
-                get_dataPtr()->at(r-dataStartRow).at(c-1)->format() = worksheet->cellAt(r, c)->format();
+                get_dataPtr()->at(r-dataStartRow).at(c-1) = std::make_shared<QXlsx::Cell>(worksheet->cellAt(r, c));
+                //get_dataPtr()->at(r-dataStartRow).at(c-1)->value() = worksheet->cellAt(r, c)->value();
+                //get_dataPtr()->at(r-dataStartRow).at(c-1)->format() = worksheet->cellAt(r, c)->format();
+                qDebug() << "再次读取第" << r-dataStartRow << "行、第" << c-1 << "列：" << get_dataPtr()->at(r-dataStartRow).at(c-1)->value().toString();
+            }
+        }
+    }
+    qDebug("maxCol = %d, maxRow = %d", maxCol, maxRow);
+    qDebug("data size is (%d, %d)", get_dataPtr()->size(), get_dataPtr()->at(0).size());
+    for (int c = 0; c < maxCol; ++c) {
+        for (int r = 0; r < maxRow - dataStartRow; ++r) {
+            if (get_dataCellPtr(r, c)->format() == get_dataCellPtr(r+1, c)->format()) {
+                qDebug("Format(%d, %d) == Format(%d, %d)", r, c, r+1, c);
+            } else {
+                qDebug("Format(%d, %d) != Format(%d, %d)", r, c, r+1, c);
             }
         }
     }
@@ -317,20 +340,25 @@ void DataTable::readExcelColumnNames(QXlsx::Worksheet* worksheet, std::shared_pt
     qDebug() << printTemp;
 }
 
-bool DataTable::updateWith(DataTable* newTable, const QString& primaryKeyColumnName)
+DataTable* DataTable::updateWith(DataTable* newTable, const QString& primaryKeyColumnName)
 {
+    DataTable* updateIgnoredTable = initUpdateFailedColumnNames(newTable);
     //确认主表中存在主键字段
-    int primaryKeyColumnIndex = get_column_index(primaryKeyColumnName);
-    if (primaryKeyColumnIndex < 0) {
+    int primaryKeyColumnIndexOfMainTable = get_column_index(primaryKeyColumnName);
+    if (primaryKeyColumnIndexOfMainTable < 0) {
         qCritical() << "主表中不存在主键字段，更新失败!" << primaryKeyColumnName;
-        return false;
+        addUpdateFailedData(newTable, updateIgnoredTable);
+        qCritical() << "主表中不存在主键字段，更新失败!" << primaryKeyColumnName;
+        return updateIgnoredTable;
     }
     //获取新增表的主键序号
     int primaryKeyColumnIndexOfNewTable = newTable->get_column_index(primaryKeyColumnName);
     qDebug() << "更新表的主键序号是" << primaryKeyColumnIndexOfNewTable;
     if (primaryKeyColumnIndexOfNewTable < 0) {
         qWarning() << "更新表中不存在主键字段，更新失败！" << primaryKeyColumnName;
-        return  false;
+        addUpdateFailedData(newTable, updateIgnoredTable);
+        qWarning() << "更新表中不存在主键字段，更新失败！" << primaryKeyColumnName;
+        return updateIgnoredTable;
     }
     //更新主表的字段
     for (PtrCell newColumnNameCell : *(newTable->get_columnNameCellVecPtr())) {
@@ -346,11 +374,21 @@ bool DataTable::updateWith(DataTable* newTable, const QString& primaryKeyColumnN
         PtrCell primaryKeyCell = newTable->get_dataPtr()->at(rowIndexOfNewTable).at(primaryKeyColumnIndexOfNewTable);
         if (primaryKeyCell == nullptr) {
             qWarning() << "主键单元格为空，跳过更新相应数据";
+            addUpdateFailedRow(newTable, rowIndexOfNewTable, updateIgnoredTable);
+            qWarning() << "主键单元格为空，跳过更新相应数据";
             continue;
         }
         QString primaryKeyValue = primaryKeyCell->value().toString().trimmed();
         if (primaryKeyValue.length() == 0) {
             qWarning() << "主键值为空，跳过更新相应数据";
+            addUpdateFailedRow(newTable, rowIndexOfNewTable, updateIgnoredTable);
+            qWarning() << "主键值为空，跳过更新相应数据";
+            continue;
+        } else if (((primaryKeyValue.contains("-无形-") == false && primaryKeyValue.contains("服务器") == false) && primaryKeyValue.contains("无"))
+                   || primaryKeyValue.contains("未知") || primaryKeyValue.contains("没有")) {
+            qWarning() << "主键值不含有效信息，跳过更新相应数据";
+            addUpdateFailedRow(newTable, rowIndexOfNewTable, updateIgnoredTable);
+            qWarning() << "主键值不含有效信息，跳过更新相应数据";
             continue;
         }
         qDebug() << "更新表第" << rowIndexOfNewTable << "行的主键值为" << primaryKeyValue;
@@ -383,7 +421,7 @@ bool DataTable::updateWith(DataTable* newTable, const QString& primaryKeyColumnN
             qWarning() << "台账中字段" << primaryKeyColumnName << "值为" << primaryKeyValue << "的行数超过1，等于" << QString(-rowIndexOfMainTable) << ", 未做更新。";
         }
     }
-    return true;
+    return updateIgnoredTable;
 }
 
 void DataTable::addColumnName(const QString& columnName)
@@ -439,7 +477,7 @@ bool DataTable::writeExcelFile(const QString& filename, const PtrVecPtrCell& exp
     for (int i = 0; i < exportColumnNameCellsPtr4Use->size(); ++i) {
         QString cellContent = exportColumnNameCellsPtr4Use->at(i)->value().toString().trimmed();
         QXlsx::Format cellFormat = exportColumnNameCellsPtr4Use->at(i)->format();
-        xlsx.write(1, i+1, cellContent, cellFormat);
+        xlsx.write(1, i+1, cellContent, titleFormat);
     }
     QXlsx::Format contentFormat;
     setContentFormat(contentFormat);
@@ -462,25 +500,35 @@ bool DataTable::writeExcelFile(const QString& filename, const PtrVecPtrCell& exp
                         }
                     }
                     cell = std::make_shared<QXlsx::Cell>(cellContent);
-                } else if (get_column_index(dataTableColumnName) >= 0) {
+                } else if (get_column_index(dataTableColumnName.trimmed()) >= 0) {
                     //如果原生字段不包括 &，但数据台账中有此字段，则正常处理
                     cell = get_dataCellPtr(i, get_column_index(dataTableColumnName.trimmed()));
                 } //数据台账中不含需要的字段，不对cell做任何处理，保持nullptr
             } else {
                 //没找到，说明不需要转换字段，什么都不做
                 cell = get_dataCellPtr(i, get_column_index(exportColumnName.trimmed()));
+                //qDebug() << "test : " << cell->value();
             }
             if (cell != nullptr) {
-                xlsx.write(i+2, j+1, cell->value(), cell->format());
+                //qDebug() << i+2 << j+1 << cell->value().toString();
+                xlsx.write(i+2, j+1, cell->value(), contentFormat);
             } else {
+                //qDebug() << i+2 << j+1 << "空值";
                 xlsx.write(i+2, j+1, "", contentFormat);
             }
         }
     }
+    qDebug() << "保存文件名：" << filename;
     bool saveResult = xlsx.saveAs(filename);
     qDebug() << (saveResult ? "成功保存到Excel文件！" : "保存Excel文件失败！");
     xlsx.deleteLater();
+    mySleep(10000, 1000);
     return saveResult;
+}
+
+bool DataTable::writeExcelFile(const QString& filename)
+{
+    return writeExcelFile(filename, columnNameCellVecPtr, std::make_shared<QMapStr2Str>());
 }
 
 void DataTable::setTitleFormat(QXlsx::Format& format)
@@ -501,6 +549,45 @@ void DataTable::setContentFormat(QXlsx::Format& format)
     format.setLocked(false);
 }
 
+//延时usetime：非阻塞时间  waittime：阻塞时间
+void DataTable::mySleep(uint usetime,ulong waittime)
+//进入此函数内给之前数据usetime毫秒时间处理，处理完立马退出执行之后，超时立马退出QThread::msleep(waittime);//阻塞延时waittime毫秒
+{QCoreApplication::processEvents(QEventLoop::AllEvents, usetime);
+}
 
+DataTable* DataTable::initUpdateFailedColumnNames(DataTable* updateTable)
+{
+    DataTable* res = new DataTable;
+    PtrVecPtrCell columnNamesPtr = updateTable->get_columnNameCellVecPtr();
+    for (PtrCell pCell : *columnNamesPtr) {
+        res->addColumnName(pCell->value().toString().trimmed());
+    }
+    res->maxCol = columnNameCellVecPtr->size();
+    res->maxRow = 0;
+    return res;
+}
+
+bool DataTable::addUpdateFailedRow(DataTable* updateTable, int rowIndex, DataTable* updateIgnoredTable)
+{
+    if (updateIgnoredTable == nullptr) return false;
+    if (updateTable->check_row_index(rowIndex)) {
+        updateIgnoredTable->add_row(updateTable->get_dataPtr()->at(rowIndex));
+        updateIgnoredTable->maxRow += 1;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool DataTable::addUpdateFailedData(DataTable* updateTable, DataTable* updateIgnoredTable)
+{
+    if (updateIgnoredTable == nullptr) return false;
+    for (int i = 0; i < updateTable->get_dataPtr()->size(); ++i) {
+        qDebug("向更新失败表格中添加第%d行数据", i);
+        updateIgnoredTable->add_row(updateTable->get_dataPtr()->at(i));
+    }
+    updateIgnoredTable->maxRow = updateIgnoredTable->get_dataPtr()->size();
+    return true;
+}
 
 

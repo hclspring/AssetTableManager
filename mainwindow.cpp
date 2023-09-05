@@ -68,13 +68,22 @@ void MainWindow::on_updateBookButton_clicked()
                              dialog->getColumnNameRow(),
                              dialog->getDataStartRow());
         qDebug() << "读取更新文件完毕，开始更新……";
-        if (dataTable->updateWith(updateTable, primaryKey)) {
+        DataTable* updateIgnoredTable = dataTable->updateWith(updateTable, primaryKey);
+        if (updateIgnoredTable) {
             qDebug() << "更新后的列数：" << dataTable->get_columnNameCellVecPtr()->size();
+            qDebug() << "更新失败的行数：" << updateIgnoredTable->get_dataPtr()->size();
             append_updateProcessTextBrowser("已按照此文件更新台账：" + filePath + "; 更新主键为：" + dialog->getPrimaryKey());
         } else {
             qDebug() << "更新失败";
             append_updateProcessTextBrowser("未能成功按照此文件更新台账：" + filePath + "; 拟更新主键为" + dialog->getPrimaryKey());
         }
+        QString updateFailedFilePath = QDir::toNativeSeparators(dialog->getUpdateFailedPath())
+                + QDir::separator() + QDateTime::currentDateTime().toString("yyyyMMdd-hhmmss")
+                + ".xlsx";
+        qDebug() << "准备将未能成功更新数据写入文件";
+        updateIgnoredTable->writeExcelFile(updateFailedFilePath);
+        qDebug() << "已将未能成功更新数据写入文件";
+        delete updateIgnoredTable;
         delete updateTable;
         ui->exportBookButton->setDisabled(false);
     }

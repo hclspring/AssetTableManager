@@ -13,6 +13,8 @@ ImportBookDialog::ImportBookDialog(Config* config, bool needPrimaryKey, QWidget 
     ui->setupUi(this);
     ui->sheetNameComboBox->setDisabled(true);
 
+    ui->updateFailedButton->setVisible(needPrimaryKey);
+    ui->updateFailedPathEdit->setVisible(needPrimaryKey);
     ui->primaryKeyLabel->setVisible(needPrimaryKey);
     ui->primaryKeyComboBox->setVisible(needPrimaryKey);
 
@@ -57,6 +59,10 @@ const QString &ImportBookDialog::getFilePath() const {
     return filePath;
 }
 
+const QString &ImportBookDialog::getUpdateFailedPath() const {
+    return updateFailedPath;
+}
+
 void ImportBookDialog::on_browseButton_clicked() {
     ui->filePathEdit->setText(QFileDialog::getOpenFileName(this, "选择打开文件", "./"));
 
@@ -74,8 +80,13 @@ void ImportBookDialog::on_browseButton_clicked() {
     }
 }
 
+void ImportBookDialog::on_updateFailedButton_clicked() {
+    ui->updateFailedPathEdit->setText(QFileDialog::getExistingDirectory(this, "选择更新失败文件保存路径", "./", QFileDialog::ShowDirsOnly));
+}
+
 void ImportBookDialog::on_confirmButton_clicked() {
     filePath = ui->filePathEdit->toPlainText();
+    updateFailedPath = ui->updateFailedPathEdit->toPlainText();
     sheetName = ui->sheetNameComboBox->currentText();
     primaryKey = ui->primaryKeyComboBox->currentText();
     dataStartRow = ui->dataStartRowLineEdit->text().toInt();
@@ -85,6 +96,7 @@ void ImportBookDialog::on_confirmButton_clicked() {
 
 void ImportBookDialog::on_cancelButton_clicked() {
     filePath = "";
+    updateFailedPath = "";
     sheetName = "";
     primaryKey = "";
     dataStartRow = -1;

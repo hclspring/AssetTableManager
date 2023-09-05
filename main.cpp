@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     //LogInfo::RecordLog();
     QApplication a(argc, argv);
-    MainWindow *w = new MainWindow();
+    MainWindow *w = new MainWindow(nullptr);
     w->show();
     return a.exec();
 }

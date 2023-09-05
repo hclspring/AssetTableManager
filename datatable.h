@@ -6,6 +6,8 @@
 #include <QSet>
 #include <QDebug>
 #include <QTextStream>
+#include <QCoreApplication>
+#include <QEventLoop>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -105,7 +107,7 @@ public:
 
     //第六部分已全部确认无误
     //六、合并更新台账
-    bool updateWith(DataTable* newDataTable, const QString& primaryKeyColumnName);
+    DataTable* updateWith(DataTable* newDataTable, const QString& primaryKeyColumnName);
 
     //第七部分已确认无误
     //七、添加字段
@@ -117,10 +119,19 @@ public:
 
     //七、写入表格文件
     bool writeExcelFile(const QString& filename, const PtrVecPtrCell& exportColumnNameCellsPtr, std::shared_ptr<QMapStr2Str> mappingExport);
+    bool writeExcelFile(const QString& filename);
 
     //八、设置表格格式
     void setTitleFormat(QXlsx::Format& format);
     void setContentFormat(QXlsx::Format& format);
+
+    void mySleep(uint usetime,ulong waittime);
+
+    //九、获取无法更新的数据
+    DataTable* initUpdateFailedColumnNames(DataTable* updateTable);
+    bool addUpdateFailedRow(DataTable* updateTable, int rowIndex, DataTable* updateIgnoredTable);
+    bool addUpdateFailedData(DataTable* updateTable, DataTable* updateIgnoredTable);
+
 
 
 };
