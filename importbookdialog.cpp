@@ -40,6 +40,11 @@ const QString &ImportBookDialog::getSheetName() const
     return sheetName;
 }
 
+const QStringList &ImportBookDialog::getSheetNames() const
+{
+    return sheetNames;
+}
+
 const QString &ImportBookDialog::getPrimaryKey() const
 {
     return primaryKey;
@@ -69,7 +74,7 @@ void ImportBookDialog::on_browseButton_clicked() {
     QXlsx::Document document(ui->filePathEdit->toPlainText());
     ui->sheetNameComboBox->clear();
     if (document.load()) {
-        QStringList sheetNames = document.sheetNames();
+        this->sheetNames = document.sheetNames();
         for (QString sheetName : sheetNames) {
             ui->sheetNameComboBox->addItem(sheetName);
         }

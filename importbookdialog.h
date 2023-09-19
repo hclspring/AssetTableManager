@@ -29,6 +29,7 @@ private:
     QString filePath;
     QString updateFailedPath;
     QString sheetName;
+    QStringList sheetNames;
     QString primaryKey;
     int dataStartRow;
     int columnNameRow;
@@ -38,6 +39,7 @@ public:
     const QString &getUpdateFailedPath() const;
 
     const QString &getSheetName() const;
+    const QStringList &getSheetNames() const;
     const QString &getPrimaryKey() const;
     int getDataStartRow() const;
     int getColumnNameRow() const;

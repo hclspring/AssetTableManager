@@ -118,8 +118,10 @@ public:
 
 
     //七、写入表格文件
-    bool writeExcelFile(const QString& filename, const PtrVecPtrCell& exportColumnNameCellsPtr, std::shared_ptr<QMapStr2Str> mappingExport);
+    //bool writeExcelFile(const QString& filename, const PtrVecPtrCell& exportColumnNameCellsPtr, std::shared_ptr<QMapStr2Str> mappingExport);
     bool writeExcelFile(const QString& filename);
+    bool writeExcelFile(const QString& outputFilename, const PtrVecPtrCell& exportColumnNameCellsPtr, std::shared_ptr<QMapStr2Str> mappingExport,
+                        const QString& inputFilename, const QString& updateSheetName);
 
     //八、设置表格格式
     void setTitleFormat(QXlsx::Format& format);

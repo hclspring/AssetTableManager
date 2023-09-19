@@ -14,6 +14,22 @@ MainWindow::MainWindow(QWidget *parent)
     ui->settingButton->setDisabled(true);
     ui->exportBookButton->setDisabled(true);
     ui->updateBookButton->setDisabled(true);
+#ifdef USE_DEFAULT_MENU_BAR
+//添加菜单栏(此处添加为的为QMainWindow自带的菜单）
+        menuBar = this->menuBar();
+#else
+    //添加自定义菜单
+        menuBar = new QMenuBar(this);
+#endif
+    menuHelp = new QMenu("帮助(&h)", this);
+    actionAbout = new QAction("关于(&A)", this);
+    menuHelp->addAction(actionAbout);
+    menuBar->addMenu(menuHelp);
+#ifndef USE_DEFAULT_MENU_BAR
+    //当不使用QMainWindow自带的菜单栏时，必须要加上此行
+    setMenuBar(menuBar);
+#endif
+    connect(actionAbout, SIGNAL(triggered(bool)), this, SLOT(on_actionAbout_triggered()));
 }
 
 MainWindow::~MainWindow()
@@ -34,6 +50,8 @@ void MainWindow::on_importBookButton_clicked()
     dialog->exec();
     if (dialog->getFilePath().length() > 0) {
         qDebug() << "读取台账文件：" << dialog->getFilePath();
+        inputFilePath = dialog->getFilePath();
+        updateSheetName = dialog->getSheetName();
         qDebug() << "初始化dataTable……";
         if (dataTable != nullptr) delete dataTable;
         dataTable = new DataTable;
@@ -99,7 +117,8 @@ void MainWindow::on_exportBookButton_clicked()
         QString filePath = dialog->get_filePath();
         QString outputStyle = dialog->get_outputStyle();
         qDebug() << "输出格式：" << outputStyle;
-        if (dataTable->writeExcelFile(filePath, GetCellsPtr(config->getExportColumnNames(outputStyle)), config->getMappingExportTarget2Source())) {
+        if (dataTable->writeExcelFile(filePath, GetCellsPtr(config->getExportColumnNames(outputStyle)), config->getMappingExportTarget2Source(),
+                                      inputFilePath, updateSheetName)) {
             qDebug() << "导出成功！";
             append_updateProcessTextBrowser("已导出台账文件：" + filePath);
         } else {
@@ -108,6 +127,16 @@ void MainWindow::on_exportBookButton_clicked()
         }
     }
     dialog->deleteLater();
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QMessageBox messageBox;
+    messageBox.setWindowTitle("关于本软件");
+    QString aboutMessage("本软件由黄春林开发，版本为%1");
+    aboutMessage = aboutMessage.arg(QDateTime::currentDateTime().toString("yyyyMMdd"));
+    messageBox.setText(aboutMessage);
+    messageBox.exec();
 }
 
 void MainWindow::append_updateProcessTextBrowser(const QString& text)

@@ -455,14 +455,24 @@ void DataTable::addNewEmptyColumn(const QString& columnName)
 }
 
 
-bool DataTable::writeExcelFile(const QString& filename, const PtrVecPtrCell& exportColumnNameCellsPtr, std::shared_ptr<QMapStr2Str> mappingExport)
+bool DataTable::writeExcelFile(const QString& outputFilename, const PtrVecPtrCell& exportColumnNameCellsPtr, std::shared_ptr<QMapStr2Str> mappingExport,
+                    const QString& inputFilename, const QString& updateSheetName)
+//bool DataTable::writeExcelFile(const QString& filename, const PtrVecPtrCell& exportColumnNameCellsPtr, std::shared_ptr<QMapStr2Str> mappingExport)
 /* 参考代码：
  * https://blog.csdn.net/qq_37603131/article/details/128555121
  */
 {
-    QXlsx::Document xlsx;
-    xlsx.addSheet("Sheet0");
-    xlsx.selectSheet("Sheet0");
+    QXlsx::Document *xlsx = nullptr;
+    if (inputFilename.length() > 0 && QFile(inputFilename).exists()) {
+        xlsx = new QXlsx::Document(inputFilename);
+        xlsx->load();
+        //xlsx->deleteSheet(updateSheetName);
+    } else {
+        xlsx = new QXlsx::Document();
+        xlsx->load();
+    }
+    xlsx->selectSheet(updateSheetName);
+
     QXlsx::Format titleFormat;
     setTitleFormat(titleFormat);
     PtrVecPtrCell exportColumnNameCellsPtr4Use;
@@ -477,7 +487,7 @@ bool DataTable::writeExcelFile(const QString& filename, const PtrVecPtrCell& exp
     for (int i = 0; i < exportColumnNameCellsPtr4Use->size(); ++i) {
         QString cellContent = exportColumnNameCellsPtr4Use->at(i)->value().toString().trimmed();
         QXlsx::Format cellFormat = exportColumnNameCellsPtr4Use->at(i)->format();
-        xlsx.write(1, i+1, cellContent, titleFormat);
+        xlsx->write(1, i+1, cellContent, titleFormat);
     }
     QXlsx::Format contentFormat;
     setContentFormat(contentFormat);
@@ -511,24 +521,24 @@ bool DataTable::writeExcelFile(const QString& filename, const PtrVecPtrCell& exp
             }
             if (cell != nullptr) {
                 //qDebug() << i+2 << j+1 << cell->value().toString();
-                xlsx.write(i+2, j+1, cell->value(), contentFormat);
+                xlsx->write(i+2, j+1, cell->value(), contentFormat);
             } else {
                 //qDebug() << i+2 << j+1 << "空值";
-                xlsx.write(i+2, j+1, "", contentFormat);
+                xlsx->write(i+2, j+1, "", contentFormat);
             }
         }
     }
-    qDebug() << "保存文件名：" << filename;
-    bool saveResult = xlsx.saveAs(filename);
+    qDebug() << "保存文件名：" << outputFilename;
+    bool saveResult = xlsx->saveAs(outputFilename);
     qDebug() << (saveResult ? "成功保存到Excel文件！" : "保存Excel文件失败！");
-    xlsx.deleteLater();
+    xlsx->deleteLater();
     mySleep(10000, 1000);
     return saveResult;
 }
 
 bool DataTable::writeExcelFile(const QString& filename)
 {
-    return writeExcelFile(filename, columnNameCellVecPtr, std::make_shared<QMapStr2Str>());
+    return writeExcelFile(filename, columnNameCellVecPtr, std::make_shared<QMapStr2Str>(), "", "Sheet0");
 }
 
 void DataTable::setTitleFormat(QXlsx::Format& format)

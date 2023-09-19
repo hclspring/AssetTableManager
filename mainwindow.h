@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QPalette>
+#include <QMessageBox>
+#include <QDateTime>
 
 class Config;
 class DataTable;
@@ -20,6 +22,13 @@ private:
     Config* config = nullptr;
     DataTable* dataTable = nullptr;
 
+    QString inputFilePath;
+    QString updateSheetName;
+
+    QMenuBar* menuBar;
+    QMenu* menuHelp;
+    QAction* actionAbout;
+
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -28,6 +37,7 @@ private slots:
     void on_importBookButton_clicked();
     void on_updateBookButton_clicked();
     void on_exportBookButton_clicked();
+    void on_actionAbout_triggered();
 
 private:
     Ui::MainWindow *ui;
