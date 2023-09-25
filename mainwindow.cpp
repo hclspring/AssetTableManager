@@ -134,7 +134,9 @@ void MainWindow::on_actionAbout_triggered()
     QMessageBox messageBox;
     messageBox.setWindowTitle("关于本软件");
     QString aboutMessage("本软件由黄春林开发，版本为%1");
-    aboutMessage = aboutMessage.arg(QDateTime::currentDateTime().toString("yyyyMMdd"));
+    //aboutMessage = aboutMessage.arg(QDateTime::currentDateTime().toString("yyyyMMdd")); //获取使用软件终端的当前时间
+    QDate compileDate = QDate::fromString(__DATE__);
+    aboutMessage = aboutMessage.arg(compileDate.toString("yyyyMMdd")); //获取编译时的当前时间
     messageBox.setText(aboutMessage);
     messageBox.exec();
 }
